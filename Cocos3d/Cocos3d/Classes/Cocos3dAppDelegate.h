@@ -12,5 +12,12 @@
 @interface Cocos3dAppDelegate : NSObject <UIApplicationDelegate> {
 	UIWindow* _window;
 	CC3DeviceCameraOverlayUIViewController* _viewController;
+    
+    float _wGx;
+    float _wGy;
 }
+
+@property (nonatomic, assign) float wGx;
+@property (nonatomic, assign) float wGy;
+
 @end

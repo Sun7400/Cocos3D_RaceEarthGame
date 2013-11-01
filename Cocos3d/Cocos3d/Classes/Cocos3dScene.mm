@@ -1,10 +1,14 @@
-/**
+    /**
  *  Cocos3dScene.m
  *  Cocos3d
  *
  *  Created by Yuhua Mai on 10/31/13.
  *  Copyright Yuhua Mai 2013. All rights reserved.
  */
+
+extern "C" {
+#import "CC3Foundation.h"	// extern must be first, since foundation also imported via other imports
+}
 
 #import "Cocos3dScene.h"
 #import "CC3PODResourceNode.h"
@@ -19,7 +23,11 @@
 
 #import "ccTypes.h"
 
-#import "Box2D.h"
+#import "CCPhysicsSprite.h"
+
+
+#define PTM_RATIO 32
+
 
 
 @interface Cocos3dScene ()
@@ -57,6 +65,164 @@
  *    application, REMOVE the POD file 'hello-world.pod' from the Resources folder of your project.
  */
 -(void) initializeScene {
+    CGSize screenSize = [CCDirector sharedDirector].winSize;
+    
+	// Create the camera, place it back a bit, and add it to the world
+	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+	cam.location = cc3v( 0.0, 0.0, 10.0 );
+	[self addChild: cam];
+    
+	// Create a light, place it back and to the left at a specific
+	// position (not just directional lighting), and add it to the world
+	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+	lamp.location = cc3v( -2.0, 0.0, 0.0 );
+	lamp.isDirectionalOnly = NO;
+	[cam addChild: lamp];
+    
+  	CC3Light* lamp2 = [CC3Light nodeWithName: @"Lamp"];
+	lamp2.location = cc3v( 0.0, 1.0, -5.0 );
+	lamp2.isDirectionalOnly = NO;
+	[cam addChild: lamp2];
+    
+	// This is the simplest way to load a POD resource file and add the
+	// nodes to the CC3World, if no customized resource subclass is needed.
+//	[self addContentFromPODResourceFile: @"Balls.pod"];
+    [self addContentFromPODFile: @"earth.pod"];
+
+    
+	// Create OpenGL ES buffers for the vertex arrays to keep things fast and efficient,
+	// and to save memory, release the vertex data in main memory because it is now redundant.
+	[self createGLBuffers];
+	[self releaseRedundantContent];
+	
+    [self selectShaderPrograms];
+    
+	[self createBoundingVolumes];
+
+    
+//    CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
+//	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
+    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+
+    
+    ////Box 2D
+    // Define the gravity vector.
+    b2Vec2 gravity;
+    gravity.Set(0.0f, -1.0f);
+    
+    // Do we want to let bodies sleep?
+    // This will speed up the physics simulation
+    // note * bodies seem to sleep when at rest for too long and will only wake up again on collision?
+    bool doSleep = false;
+    
+    // Construct a world object, which will hold and simulate the rigid bodies.
+    _world = new b2World(gravity, doSleep);
+    _world->SetContinuousPhysics(false);
+    
+    // Define the ground body.
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(0, 0); // bottom-left corner
+    
+    // The body is also added to the world.
+    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+    
+    // Define the ground box shape.
+    b2PolygonShape groundBox;
+    
+    // bottom
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // top
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // left
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // right
+    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
+    ///
+    
+    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+    
+    // Create sprite and add it to the layer
+    CC3Texture* bgTex = [CC3Texture textureFromFile:@"Default.png"];
+    
+    CGSize rectSize = CGSizeMake(6, 10);
+    CC3PlaneNode* spritePlane = [CC3PlaneNode node];
+    [spritePlane populateAsRectangleWithSize: rectSize
+                                    andPivot: ccp(rectSize.width / 2.0, rectSize.height / 2.0)
+                                 withTexture: bgTex
+                               invertTexture: TRUE];
+    spritePlane.location = cc3v( 0.0, 0.0, -1 );
+	[self addChild: spritePlane];
+    
+    
+    //create earth body
+    b2BodyDef ballBodyDef;
+    ballBodyDef.type = b2_dynamicBody;
+    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    ballBodyDef.userData = earth;
+    b2Body * ballBody = _world->CreateBody(&ballBodyDef);
+    
+    // Create circle shape
+    b2CircleShape circle;
+    circle.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef ballShapeDef;
+    ballShapeDef.shape = &circle;
+    ballShapeDef.density = 2.0f;
+    ballShapeDef.friction = 0.2f;
+    ballShapeDef.restitution = 0.35f;
+    ballShapeDef.isSensor = FALSE;
+//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
+
+    
+//    // Create ball body
+//    b2BodyDef ballBodyDef;
+//    ballBodyDef.type = b2_dynamicBody;
+//    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+//    ballBodyDef.userData = bBall;
+//    b2Body * ballBody = _world->CreateBody(&ballBodyDef);
+//    
+//    // Create circle shape
+//    b2CircleShape circle;
+//    circle.m_radius = screenSize.width/5/PTM_RATIO;
+//    
+//    // Create shape definition and add to body
+//    b2FixtureDef ballShapeDef;
+//    ballShapeDef.shape = &circle;
+//    ballShapeDef.density = 2.0f;
+//    ballShapeDef.friction = 0.2f;
+//    ballShapeDef.restitution = 0.35f;
+//    ballShapeDef.isSensor = FALSE;
+//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
+//    
+//    // Create ball body
+//    ballBodyDef.type = b2_dynamicBody;
+//    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+//    ballBodyDef.userData = globe;
+//    ballBody = _world->CreateBody(&ballBodyDef);
+//    
+//    // Create circle shape
+//    circle.m_radius = screenSize.width/5/PTM_RATIO;
+//    
+//    // Create shape definition and add to body
+//    ballShapeDef.shape = &circle;
+//    ballShapeDef.density = 2.0f;
+//    ballShapeDef.friction = 0.2f;
+//    ballShapeDef.restitution = 0.35f;
+//    ballShapeDef.isSensor = FALSE;
+//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
+//    
+    previousTime = nil;
+
+/*
+    CGSize screenSize = [CCDirector sharedDirector].winSize;
 
 	// Create the camera, place it back a bit, and add it to the scene
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
@@ -152,6 +318,48 @@
                                                           rotateBy: cc3v(0.0, 30.0, 0.0)];
     [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
     
+    
+    ////Box 2D
+    // Define the gravity vector.
+    b2Vec2 gravity;
+    gravity.Set(0.0f, -1.0f);
+    
+    // Do we want to let bodies sleep?
+    // This will speed up the physics simulation
+    // note * bodies seem to sleep when at rest for too long and will only wake up again on collision?
+    bool doSleep = false;
+    
+    // Construct a world object, which will hold and simulate the rigid bodies.
+    _world = new b2World(gravity, doSleep);
+    _world->SetContinuousPhysics(false);
+    
+    // Define the ground body.
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(0, 0); // bottom-left corner
+    
+    // The body is also added to the world.
+    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+    
+    // Define the ground box shape.
+    b2PolygonShape groundBox;
+    
+    // bottom
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // top
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // left
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // right
+    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
+    ///
+    
 //
 //	// And to add some dynamism, we'll animate the 'hello, world' message
 //	// using a couple of actions...
@@ -177,6 +385,7 @@
 //													   blue: startColor.b];
 //	 CCActionInterval* tintCycle = [CCSequence actionOne: tintDown two: tintUp];
 //	[helloTxt runAction: [CCRepeatForever actionWithAction: tintCycle]];
+*/
 }
 
 /**
@@ -211,7 +420,13 @@
  *
  * For more info, read the notes of this method on CC3Node.
  */
--(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {}
+-(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
+    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
+    _world->SetGravity(gravity);
+    NSLog(@"update! before");
+
+}
 
 /**
  * This template method is invoked periodically whenever the 3D nodes are to be updated.
@@ -221,7 +436,54 @@
  *
  * For more info, read the notes of this method on CC3Node.
  */
--(void) updateAfterTransform: (CC3NodeUpdatingVisitor*) visitor {}
+
+-(void) updateAfterTransform: (CC3NodeUpdatingVisitor*) visitor {
+    NSLog(@"update! after");
+
+    int32 velocityIterations = 8;
+    int32 positionIterations = 1;
+    
+    if (!previousTime) {
+        deltaTime = 0.1;
+    }else{
+        deltaTime = CACurrentMediaTime()-previousTime;
+    }
+    
+    _world->Step(deltaTime, velocityIterations, positionIterations);
+    
+    //Iterate over the bodies in the physics world
+    for (b2Body* b = _world->GetBodyList(); b; b = b->GetNext())
+    {
+        if (b->GetUserData() != NULL) {
+            
+            CGSize winSz = [[CCDirector sharedDirector] winSizeInPixels];
+            GLfloat aspect = winSz.width / winSz.height;
+            
+            // Express touchPoint X & Y as fractions of the window size
+            GLfloat xtp = ((2.0 * b->GetPosition().x*PTM_RATIO) / winSz.width) - 1;
+            GLfloat ytp = ((2.0 * b->GetPosition().y*PTM_RATIO) / winSz.height) - 1;
+            
+            // Get the tangent of half of the camera's field of view angle
+            GLfloat effectiveFOV = self.activeCamera.fieldOfView / self.uniformScale;
+            GLfloat halfFOV = effectiveFOV / 2.0;
+            GLfloat tanHalfFOV = tanf(DegreesToRadians(halfFOV));
+            
+            // Get the distance from the camera to the projection plane
+            GLfloat zCam = self.activeCamera.globalLocation.z;
+            
+            // Calc the X & Y coordinates on the Z = 0 plane using trig and similar triangles
+            CC3Vector tp3D = cc3v(tanHalfFOV * xtp * aspect * zCam,
+                                  tanHalfFOV * ytp * zCam,
+                                  0.0f);
+            
+            //Synchronize the mesh position with the corresponding body
+            CC3MeshNode *myActor = (CC3MeshNode*)b->GetUserData();
+            myActor.location = cc3v(tp3D.x,tp3D.y,0);
+        }
+    }
+    
+    previousTime = CACurrentMediaTime();
+}
 
 
 #pragma mark Scene opening and closing
@@ -400,10 +662,79 @@
 //    a.
 }
 
+
+//-(void) addNewSpriteAtPosition:(CGPoint)p
+//{
+//	CCLOG(@"Add sprite %0.2f x %02.f",p.x,p.y);
+//	// Define the dynamic body.
+//	//Set up a 1m squared box in the physics world
+//	b2BodyDef bodyDef;
+//	bodyDef.type = b2_dynamicBody;
+//	bodyDef.position.Set(p.x/PTM_RATIO, p.y/PTM_RATIO);
+//	b2Body *body = _world->CreateBody(&bodyDef);
+//	
+//	// Define another box shape for our dynamic body.
+//	b2PolygonShape dynamicBox;
+//	dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
+//	
+//	// Define the dynamic body fixture.
+//	b2FixtureDef fixtureDef;
+//	fixtureDef.shape = &dynamicBox;
+//	fixtureDef.density = 1.0f;
+//	fixtureDef.friction = 0.3f;
+//	body->CreateFixture(&fixtureDef);
+//	
+//    
+//	CCNode *parent = [self getChildByTag:kTagParentNode];
+//	
+//	//We have a 64x64 sprite sheet with 4 different 32x32 images.  The following code is
+//	//just randomly picking one of the images
+//	int idx = (CCRANDOM_0_1() > .5 ? 0:1);
+//	int idy = (CCRANDOM_0_1() > .5 ? 0:1);
+//	CCPhysicsSprite *sprite = [CCPhysicsSprite spriteWithTexture:spriteTexture_ rect:CGRectMake(32 * idx,32 * idy,32,32)];
+//	[parent addChild:sprite];
+//	
+//	[sprite setPTMRatio:PTM_RATIO];
+//	[sprite setB2Body:body];
+//	[sprite setPosition: ccp( p.x, p.y)];
+//    
+//}
+//
+//- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+//{
+//	//Add a new body/atlas sprite at the touched location
+//	for( UITouch *touch in touches ) {
+//		CGPoint location = [touch locationInView: [touch view]];
+//		
+//		location = [[CCDirector sharedDirector] convertToGL: location];
+//		
+//		[self addNewSpriteAtPosition: location];
+//	}
+//}
+
+
+//-(void) updateScene: (ccTime) dt
+//{
+	//It is recommended that a fixed time step is used with Box2D for stability
+	//of the simulation, however, we are using a variable time step here.
+	//You need to make an informed choice, the following URL is useful
+	//http://gafferongames.com/game-physics/fix-your-timestep/
+
+//    NSLog(@"update!");
+    
+//	int32 velocityIterations = 8;
+//	int32 positionIterations = 1;
+//	
+//	// Instruct the world to perform a single step of simulation. It is
+//	// generally best to keep the time step and iterations fixed.
+//	_world->Step(dt, velocityIterations, positionIterations);
+//}
+
 //- (void)updateScene:(ccTime)dt
 //{
 //    y -= 10;
 //}
+
 
 @end
 

@@ -9,8 +9,18 @@
 
 #import "CC3Scene.h"
 
+#import "Box2D.h"
+#import "Cocos3dAppDelegate.h"
+
 /** A sample application-specific CC3Scene subclass.*/
 @interface Cocos3dScene : CC3Scene {
+    
+    // Box2d
+	b2World* _world;
+	b2Fixture* _ballFixture;
+
+    double previousTime;
+    double deltaTime;
 }
 
 @end

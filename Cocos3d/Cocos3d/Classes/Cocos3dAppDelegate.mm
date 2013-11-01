@@ -105,8 +105,8 @@
 //	_viewController.isOverlayingDeviceCamera = YES;
 
 	
-	// ******** START OF COCOS3D SETUP CODE... ********
-	
+	// ******** START OF COCOS3D SETUP CODE... ********    
+    
 	// Create the customized CC3Layer that supports 3D rendering.
 	CC3Layer* cc3Layer = [Cocos3dLayer layerWithController: _viewController];
 	
@@ -116,6 +116,11 @@
 	
 	// Assign to a generic variable so we can uncomment options below to play with the capabilities
 	CC3ControllableLayer* mainLayer = cc3Layer;
+    
+    // Set World Gravity (b2d)
+    _wGx = 2.0f;
+    _wGy = 9.0f;
+    
 	
 	// The 3D layer can run either directly in the scene, or it can run as a smaller "sub-window"
 	// within any standard CCLayer. So you can have a mostly 2D window, with a smaller 3D window
@@ -128,7 +133,7 @@
 //	[mainLayer addChild: cc3Layer];
 	
 	// A smaller 3D layer can even be moved around on the screen dyanmically. To see this in action,
-	// uncomment the lines above as described, and also uncomment the following two lines.
+//	// uncomment the lines above as described, and also uncomment the following two lines.
 //	cc3Layer.position = ccp(0.0, 0.0);
 //	[cc3Layer runAction: [CCMoveTo actionWithDuration: 15.0 position: ccp(500.0, 250.0)]];
 	

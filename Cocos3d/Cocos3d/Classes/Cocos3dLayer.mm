@@ -22,9 +22,30 @@
  * For more info, read the notes of this method on CC3Layer.
  */
 -(void) initializeControls {
+//    self.isAccelerometerEnabled = YES;
 	[self scheduleUpdate];
 }
 
+
+- (void)accelerometer:(UIAccelerometer*)accelerometer didAccelerate:(UIAcceleration*)acceleration
+{
+    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+    
+	static float prevX=0, prevY=0;
+	
+	//#define kFilterFactor 0.05f
+#define kFilterFactor 1.0f	// don't use filter. the code is here just as an example
+	
+	float accelX = (float) acceleration.x * kFilterFactor + (1- kFilterFactor)*prevX;
+	float accelY = (float) acceleration.y * kFilterFactor + (1- kFilterFactor)*prevY;
+	
+	prevX = accelX;
+	prevY = accelY;
+    
+    mainDelegate.wGx = 20.0f*accelX;
+    mainDelegate.wGy = 20.0f*accelY;
+    
+}
 
 #pragma mark Updating layer
 
@@ -56,5 +77,10 @@
 	[self handleTouch: touch ofType: kCCTouchMoved];
 }
  */
+
+- (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    NSLog(@"touch!");
+}
 
 @end
