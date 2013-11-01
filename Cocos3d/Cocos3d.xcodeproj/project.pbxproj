@@ -331,6 +331,7 @@
 		4C2E772118235AFB0072F6F0 /* Cocos3dLayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E771E18235AFB0072F6F0 /* Cocos3dLayer.mm */; };
 		4C2E772218235AFB0072F6F0 /* Cocos3dScene.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E771F18235AFB0072F6F0 /* Cocos3dScene.mm */; };
 		4C2E77241823EFE30072F6F0 /* Balls.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77231823EFE30072F6F0 /* Balls.pod */; };
+		4C2E773B18242DA30072F6F0 /* blocks.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E773A18242DA30072F6F0 /* blocks.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -982,6 +983,7 @@
 		4C2E771E18235AFB0072F6F0 /* Cocos3dLayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Cocos3dLayer.mm; path = Classes/Cocos3dLayer.mm; sourceTree = "<group>"; };
 		4C2E771F18235AFB0072F6F0 /* Cocos3dScene.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Cocos3dScene.mm; path = Classes/Cocos3dScene.mm; sourceTree = "<group>"; };
 		4C2E77231823EFE30072F6F0 /* Balls.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Balls.pod; sourceTree = "<group>"; };
+		4C2E773A18242DA30072F6F0 /* blocks.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blocks.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1914,6 +1916,7 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C2E773A18242DA30072F6F0 /* blocks.png */,
 				4C2E77231823EFE30072F6F0 /* Balls.pod */,
 				4C2E714C18231D420072F6F0 /* Info.plist */,
 				4C2E718018231D420072F6F0 /* hello-world.pod */,
@@ -2187,6 +2190,7 @@
 				4C2E713518231D410072F6F0 /* CC3NoTextureReflectAlphaTest.fsh in Resources */,
 				4C2E715318231D420072F6F0 /* Icon-40.png in Resources */,
 				4C2E714318231D420072F6F0 /* CC3SingleTextureAlphaTest.fsh in Resources */,
+				4C2E773B18242DA30072F6F0 /* blocks.png in Resources */,
 				4C2E712D18231D410072F6F0 /* CC3MultiTextureConfigurable.fsh in Resources */,
 				4C2E712118231D410072F6F0 /* CC3BumpMapObjectSpaceAlphaTest.fsh in Resources */,
 				4C2E713118231D410072F6F0 /* CC3NoTextureAlphaTest.fsh in Resources */,

@@ -28,7 +28,9 @@ extern "C" {
 
 #define PTM_RATIO 32
 
-
+enum {
+	kTagParentNode = 1,
+};
 
 @interface Cocos3dScene ()
 {
@@ -108,7 +110,10 @@ extern "C" {
     ////Box 2D
     // Define the gravity vector.
     b2Vec2 gravity;
-    gravity.Set(0.0f, -1.0f);
+    gravity.Set(10.0f, 10.0f);
+    
+    CCSpriteBatchNode *parent = [CCSpriteBatchNode batchNodeWithFile:@"blocks.png" capacity:100];
+    spriteTexture_ = [parent texture];
     
     // Do we want to let bodies sleep?
     // This will speed up the physics simulation
@@ -166,6 +171,7 @@ extern "C" {
     ballBodyDef.type = b2_dynamicBody;
     ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
     ballBodyDef.userData = earth;
+    ballBodyDef.linearVelocity = b2Vec2(-10000.0f, 2.0f);
     b2Body * ballBody = _world->CreateBody(&ballBodyDef);
     
     // Create circle shape
@@ -175,7 +181,7 @@ extern "C" {
     // Create shape definition and add to body
     b2FixtureDef ballShapeDef;
     ballShapeDef.shape = &circle;
-    ballShapeDef.density = 2.0f;
+    ballShapeDef.density = 0.0f;
     ballShapeDef.friction = 0.2f;
     ballShapeDef.restitution = 0.35f;
     ballShapeDef.isSensor = FALSE;
@@ -422,7 +428,8 @@ extern "C" {
  */
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
-    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
+//    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
+    b2Vec2 gravity = b2Vec2(0.0f, -10.0f);
     _world->SetGravity(gravity);
     NSLog(@"update! before");
 
@@ -594,7 +601,11 @@ extern "C" {
  *
  * For more info, read the notes of this method on CC3Scene.
  */
--(void) touchEvent: (uint) touchType at: (CGPoint) touchPoint {}
+-(void) touchEvent: (uint) touchType at: (CGPoint) touchPoint {
+
+	//Add a new body/atlas sprite at the touched location
+	NSLog(@"Touch %@ %d %d", touchType, touchPoint.x, touchPoint.y);
+}
 
 /**
  * This callback template method is invoked automatically when a node has been picked
@@ -685,7 +696,7 @@ extern "C" {
 //	body->CreateFixture(&fixtureDef);
 //	
 //    
-//	CCNode *parent = [self getChildByTag:kTagParentNode];
+////	CC3Node *parent = [[CC3Node alloc] init];
 //	
 //	//We have a 64x64 sprite sheet with 4 different 32x32 images.  The following code is
 //	//just randomly picking one of the images
@@ -693,24 +704,18 @@ extern "C" {
 //	int idy = (CCRANDOM_0_1() > .5 ? 0:1);
 //	CCPhysicsSprite *sprite = [CCPhysicsSprite spriteWithTexture:spriteTexture_ rect:CGRectMake(32 * idx,32 * idy,32,32)];
 //	[parent addChild:sprite];
-//	
+//	[self addChild:parent];
+//    
 //	[sprite setPTMRatio:PTM_RATIO];
 //	[sprite setB2Body:body];
 //	[sprite setPosition: ccp( p.x, p.y)];
 //    
+//    
+//    
 //}
-//
-//- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-//{
-//	//Add a new body/atlas sprite at the touched location
-//	for( UITouch *touch in touches ) {
-//		CGPoint location = [touch locationInView: [touch view]];
-//		
-//		location = [[CCDirector sharedDirector] convertToGL: location];
-//		
-//		[self addNewSpriteAtPosition: location];
-//	}
-//}
+
+
+
 
 
 //-(void) updateScene: (ccTime) dt

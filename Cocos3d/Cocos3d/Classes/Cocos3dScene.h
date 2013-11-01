@@ -21,6 +21,9 @@
 
     double previousTime;
     double deltaTime;
+    
+    CCTexture2D *spriteTexture_;	// weak ref
+
 }
 
 @end

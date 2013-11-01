@@ -23,6 +23,7 @@
  */
 -(void) initializeControls {
 //    self.isAccelerometerEnabled = YES;
+    self.isTouchEnabled = YES;
 	[self scheduleUpdate];
 }
 
