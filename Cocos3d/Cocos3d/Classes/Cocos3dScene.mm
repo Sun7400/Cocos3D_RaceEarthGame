@@ -88,7 +88,7 @@ enum {
     
 	// This is the simplest way to load a POD resource file and add the
 	// nodes to the CC3World, if no customized resource subclass is needed.
-//	[self addContentFromPODResourceFile: @"Balls.pod"];
+	[self addContentFromPODResourceFile: @"Balls.pod"];
     [self addContentFromPODFile: @"earth.pod"];
 
     
@@ -102,8 +102,8 @@ enum {
 	[self createBoundingVolumes];
 
     
-//    CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
-//	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
+    CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
+	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
 
     
@@ -123,6 +123,10 @@ enum {
     // Construct a world object, which will hold and simulate the rigid bodies.
     _world = new b2World(gravity, doSleep);
     _world->SetContinuousPhysics(false);
+    
+    
+    b2ContactListener *myListener = new b2ContactListener();
+    _world->SetContactListener(myListener);
     
     // Define the ground body.
     b2BodyDef groundBodyDef;
@@ -188,32 +192,32 @@ enum {
 //    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
 
     
-//    // Create ball body
-//    b2BodyDef ballBodyDef;
-//    ballBodyDef.type = b2_dynamicBody;
-//    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
-//    ballBodyDef.userData = bBall;
-//    b2Body * ballBody = _world->CreateBody(&ballBodyDef);
-//    
-//    // Create circle shape
-//    b2CircleShape circle;
-//    circle.m_radius = screenSize.width/5/PTM_RATIO;
-//    
-//    // Create shape definition and add to body
-//    b2FixtureDef ballShapeDef;
-//    ballShapeDef.shape = &circle;
-//    ballShapeDef.density = 2.0f;
-//    ballShapeDef.friction = 0.2f;
-//    ballShapeDef.restitution = 0.35f;
-//    ballShapeDef.isSensor = FALSE;
-//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
-//    
-//    // Create ball body
-//    ballBodyDef.type = b2_dynamicBody;
-//    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
-//    ballBodyDef.userData = globe;
-//    ballBody = _world->CreateBody(&ballBodyDef);
-//    
+    // Create ball body
+    b2BodyDef ballBodyDef2;
+    ballBodyDef2.type = b2_dynamicBody;
+    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    ballBodyDef2.userData = bBall;
+    b2Body * ballBody2 = _world->CreateBody(&ballBodyDef2);
+    
+    // Create circle shape
+    b2CircleShape circle2;
+    circle2.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef ballShapeDef2;
+    ballShapeDef2.shape = &circle2;
+    ballShapeDef2.density = 2.0f;
+    ballShapeDef2.friction = 0.2f;
+    ballShapeDef2.restitution = 0.35f;
+    ballShapeDef2.isSensor = FALSE;
+    _ballFixture = ballBody2->CreateFixture(&ballShapeDef2);
+    
+    // Create ball body
+    ballBodyDef2.type = b2_dynamicBody;
+    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    ballBodyDef2.userData = globe;
+    ballBody2 = _world->CreateBody(&ballBodyDef2);
+
 //    // Create circle shape
 //    circle.m_radius = screenSize.width/5/PTM_RATIO;
 //    
@@ -487,6 +491,14 @@ enum {
             CC3MeshNode *myActor = (CC3MeshNode*)b->GetUserData();
             myActor.location = cc3v(tp3D.x,tp3D.y,0);
         }
+    }
+    
+    for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
+         //do something with the contact
+        NSLog(@"contact!");
+        contact->GetFixtureA()->GetBody()->GetUserData();
+        contact->GetFixtureB()->GetBody()->GetUserData();
+
     }
     
     previousTime = CACurrentMediaTime();
