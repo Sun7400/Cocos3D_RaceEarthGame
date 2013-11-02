@@ -186,9 +186,9 @@ enum {
     //create earth body
     b2BodyDef earthBodyDef;
     earthBodyDef.type = b2_dynamicBody;
-    earthBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
     earthBodyDef.userData = earth;
-    earthBodyDef.linearVelocity = b2Vec2(-10.0f, 2.0f);
+    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
     b2Body * earthBody = _world->CreateBody(&earthBodyDef);
     
 
@@ -200,7 +200,7 @@ enum {
     b2FixtureDef earthShapeDef;
     earthShapeDef.shape = &circle;
     earthShapeDef.density = 0.0f;
-    earthShapeDef.friction = 0.2f;
+//    earthShapeDef.friction = 0.2f;
     earthShapeDef.restitution = 0.35f;
     earthShapeDef.isSensor = FALSE;
     _earthFixture = earthBody->CreateFixture(&earthShapeDef);
@@ -211,51 +211,50 @@ enum {
     // Create ball body
     b2BodyDef ballBodyDef2;
     ballBodyDef2.type = b2_dynamicBody;
-    ballBodyDef2.position.Set(500/PTM_RATIO, 400/PTM_RATIO);
+    ballBodyDef2.position.Set(600/PTM_RATIO, 400/PTM_RATIO);
     ballBodyDef2.userData = bBall;
-    ballBodyDef2.linearVelocity = b2Vec2(10.0f, 0.0f);
+    ballBodyDef2.linearVelocity = b2Vec2(-10.0f, 0.0f);
     b2Body * ballBody2 = _world->CreateBody(&ballBodyDef2);
     
     // Create circle shape
     b2CircleShape circle2;
+//    circle2.m_radius = 10;
     circle2.m_radius = screenSize.width/5/PTM_RATIO;
     
     // Create shape definition and add to body
     b2FixtureDef ballShapeDef2;
     ballShapeDef2.shape = &circle2;
     ballShapeDef2.density = 2.0f;
-    ballShapeDef2.friction = 0.2f;
+//    ballShapeDef2.friction = 0.2f;
     ballShapeDef2.restitution = 0.35f;
     ballShapeDef2.isSensor = FALSE;
     _ballFixture = ballBody2->CreateFixture(&ballShapeDef2);
     
     
     
-    
-    
-    
-    
-    
+//White Ball
     // Create ball body
-//    ballBodyDef2.type = b2_dynamicBody;
-//    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
-//    ballBodyDef2.userData = globe;
-//    ballBody2 = _world->CreateBody(&ballBodyDef2);
+    b2BodyDef whiteBallBodyDef;
+    whiteBallBodyDef.type = b2_dynamicBody;
+    whiteBallBodyDef.position.Set(400/PTM_RATIO, 1000/PTM_RATIO);
+    whiteBallBodyDef.userData = globe;
+    whiteBallBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
+    b2Body * whiteBallBody = _world->CreateBody(&whiteBallBodyDef);
+    
+    // Create circle shape
+    b2CircleShape whiteBallCircle;
+    whiteBallCircle.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef whiteBallShapeDef;
+    whiteBallShapeDef.shape = &whiteBallCircle;
+    whiteBallShapeDef.density = 2.0f;
+    whiteBallShapeDef.friction = 0.2f;
+    whiteBallShapeDef.restitution = 0.35f;
+    whiteBallShapeDef.isSensor = FALSE;
+    _ballFixture = whiteBallBody->CreateFixture(&whiteBallShapeDef);
 
-    
-    
-    
-//    // Create circle shape
-//    circle.m_radius = screenSize.width/5/PTM_RATIO;
-//    
-//    // Create shape definition and add to body
-//    ballShapeDef.shape = &circle;
-//    ballShapeDef.density = 2.0f;
-//    ballShapeDef.friction = 0.2f;
-//    ballShapeDef.restitution = 0.35f;
-//    ballShapeDef.isSensor = FALSE;
-//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
-//    
+
     previousTime = nil;
 
 /*
@@ -462,7 +461,7 @@ enum {
 //    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
     b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
     _world->SetGravity(gravity);
-    NSLog(@"update! before");
+//    NSLog(@"update! before");
 
 }
 
@@ -476,10 +475,10 @@ enum {
  */
 
 -(void) updateAfterTransform: (CC3NodeUpdatingVisitor*) visitor {
-    NSLog(@"update! after");
+//    NSLog(@"update! after");
 
     int32 velocityIterations = 8;
-    int32 positionIterations = 1;
+    int32 positionIterations = 3;
     
     if (!previousTime) {
         deltaTime = 0.1;
@@ -523,14 +522,17 @@ enum {
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
          //do something with the contact
         NSLog(@"contact!");
+        b2Vec2 va = contact->GetFixtureA()->GetBody()->GetLinearVelocity();
+        va.x = -va.x;
+        va.y = -va.y;
         b2Body *a = contact->GetFixtureA()->GetBody();
-        b2Body *b = contact->GetFixtureB()->GetBody();
-//        b->SetLinearVelocity(b2Vec2(0.0f, 1000000.0f));
-//        b->SetActive(false);
+        a->SetLinearVelocity(va);
         
-//        contact->GetFixtureA()->GetBody()->GetUserData();
-//        contact->GetFixtureB()->GetBody()->GetUserData();
-
+        b2Vec2 vb = contact->GetFixtureB()->GetBody()->GetLinearVelocity();
+        vb.x = -vb.x;
+        vb.y = -vb.y;
+        b2Body *b = contact->GetFixtureB()->GetBody();
+        b->SetLinearVelocity(vb);
     }
     
     previousTime = CACurrentMediaTime();
