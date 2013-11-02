@@ -17,7 +17,8 @@
     
     // Box2d
 	b2World* _world;
-	b2Fixture* _ballFixture;
+	b2Fixture* _earthFixture;
+    b2Fixture* _ballFixture;
 
     double previousTime;
     double deltaTime;

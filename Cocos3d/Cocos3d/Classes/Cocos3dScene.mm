@@ -88,7 +88,8 @@ enum {
     
 	// This is the simplest way to load a POD resource file and add the
 	// nodes to the CC3World, if no customized resource subclass is needed.
-	[self addContentFromPODResourceFile: @"Balls.pod"];
+//    [self addContentFromPODFile:@"Balls.pod" withName:@"BeachBall"];
+	[self addContentFromPODFile: @"Balls.pod"];
     [self addContentFromPODFile: @"earth.pod"];
 
     
@@ -102,8 +103,13 @@ enum {
 	[self createBoundingVolumes];
 
     
+    
     CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
+    [self removeChild:globe];
+    
 	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
+
+//    CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
 
     
@@ -118,85 +124,96 @@ enum {
     // Do we want to let bodies sleep?
     // This will speed up the physics simulation
     // note * bodies seem to sleep when at rest for too long and will only wake up again on collision?
-    bool doSleep = false;
+    bool doSleep = true;
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     _world = new b2World(gravity, doSleep);
-    _world->SetContinuousPhysics(false);
-    
+    _world->SetContinuousPhysics(true);
     
     b2ContactListener *myListener = new b2ContactListener();
     _world->SetContactListener(myListener);
     
+    
+    
     // Define the ground body.
-    b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0, 0); // bottom-left corner
-    
-    // The body is also added to the world.
-    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
-    
-    // Define the ground box shape.
-    b2PolygonShape groundBox;
-    
-    // bottom
-    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // top
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // left
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // right
-    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
-    groundBody->CreateFixture(&groundBox,0);
+//    b2BodyDef groundBodyDef;
+//    groundBodyDef.position.Set(0, 0); // bottom-left corner
+//    
+//    // The body is also added to the world.
+//    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+//    
+//    // Define the ground box shape.
+//    b2PolygonShape groundBox;
+//    
+//    // bottom
+//    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+//    groundBody->CreateFixture(&groundBox,0);
+//    
+//    // top
+//    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
+//    groundBody->CreateFixture(&groundBox,0);
+//    
+//    // left
+//    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
+//    groundBody->CreateFixture(&groundBox,0);
+//    
+//    // right
+//    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+//    groundBody->CreateFixture(&groundBox,0);
     ///
+    
+    
+    
     
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
     
     // Create sprite and add it to the layer
-    CC3Texture* bgTex = [CC3Texture textureFromFile:@"Default.png"];
+//    CC3Texture* bgTex = [CC3Texture textureFromFile:@"Default.png"];
+//    
+//    CGSize rectSize = CGSizeMake(6, 10);
+//    CC3PlaneNode* spritePlane = [CC3PlaneNode node];
+//    [spritePlane populateAsRectangleWithSize: rectSize
+//                                    andPivot: ccp(rectSize.width / 2.0, rectSize.height / 2.0)
+//                                 withTexture: bgTex
+//                               invertTexture: TRUE];
+//    spritePlane.location = cc3v( 0.0, 0.0, -1 );
+//	[self addChild: spritePlane];
     
-    CGSize rectSize = CGSizeMake(6, 10);
-    CC3PlaneNode* spritePlane = [CC3PlaneNode node];
-    [spritePlane populateAsRectangleWithSize: rectSize
-                                    andPivot: ccp(rectSize.width / 2.0, rectSize.height / 2.0)
-                                 withTexture: bgTex
-                               invertTexture: TRUE];
-    spritePlane.location = cc3v( 0.0, 0.0, -1 );
-	[self addChild: spritePlane];
     
     
+    
+// EARTH
     //create earth body
-    b2BodyDef ballBodyDef;
-    ballBodyDef.type = b2_dynamicBody;
-    ballBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
-    ballBodyDef.userData = earth;
-    ballBodyDef.linearVelocity = b2Vec2(-10000.0f, 2.0f);
-    b2Body * ballBody = _world->CreateBody(&ballBodyDef);
+    b2BodyDef earthBodyDef;
+    earthBodyDef.type = b2_dynamicBody;
+    earthBodyDef.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    earthBodyDef.userData = earth;
+    earthBodyDef.linearVelocity = b2Vec2(-10.0f, 2.0f);
+    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
     
+
     // Create circle shape
     b2CircleShape circle;
     circle.m_radius = screenSize.width/5/PTM_RATIO;
-    
+
     // Create shape definition and add to body
-    b2FixtureDef ballShapeDef;
-    ballShapeDef.shape = &circle;
-    ballShapeDef.density = 0.0f;
-    ballShapeDef.friction = 0.2f;
-    ballShapeDef.restitution = 0.35f;
-    ballShapeDef.isSensor = FALSE;
-//    _ballFixture = ballBody->CreateFixture(&ballShapeDef);
+    b2FixtureDef earthShapeDef;
+    earthShapeDef.shape = &circle;
+    earthShapeDef.density = 0.0f;
+    earthShapeDef.friction = 0.2f;
+    earthShapeDef.restitution = 0.35f;
+    earthShapeDef.isSensor = FALSE;
+    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
 
     
+    
+// BALL
     // Create ball body
     b2BodyDef ballBodyDef2;
     ballBodyDef2.type = b2_dynamicBody;
-    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+    ballBodyDef2.position.Set(500/PTM_RATIO, 400/PTM_RATIO);
     ballBodyDef2.userData = bBall;
+    ballBodyDef2.linearVelocity = b2Vec2(10.0f, 0.0f);
     b2Body * ballBody2 = _world->CreateBody(&ballBodyDef2);
     
     // Create circle shape
@@ -212,12 +229,22 @@ enum {
     ballShapeDef2.isSensor = FALSE;
     _ballFixture = ballBody2->CreateFixture(&ballShapeDef2);
     
+    
+    
+    
+    
+    
+    
+    
     // Create ball body
-    ballBodyDef2.type = b2_dynamicBody;
-    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
-    ballBodyDef2.userData = globe;
-    ballBody2 = _world->CreateBody(&ballBodyDef2);
+//    ballBodyDef2.type = b2_dynamicBody;
+//    ballBodyDef2.position.Set(300/PTM_RATIO, 400/PTM_RATIO);
+//    ballBodyDef2.userData = globe;
+//    ballBody2 = _world->CreateBody(&ballBodyDef2);
 
+    
+    
+    
 //    // Create circle shape
 //    circle.m_radius = screenSize.width/5/PTM_RATIO;
 //    
@@ -433,7 +460,7 @@ enum {
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
 //    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
-    b2Vec2 gravity = b2Vec2(0.0f, -10.0f);
+    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
     _world->SetGravity(gravity);
     NSLog(@"update! before");
 
@@ -496,8 +523,13 @@ enum {
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
          //do something with the contact
         NSLog(@"contact!");
-        contact->GetFixtureA()->GetBody()->GetUserData();
-        contact->GetFixtureB()->GetBody()->GetUserData();
+        b2Body *a = contact->GetFixtureA()->GetBody();
+        b2Body *b = contact->GetFixtureB()->GetBody();
+//        b->SetLinearVelocity(b2Vec2(0.0f, 1000000.0f));
+//        b->SetActive(false);
+        
+//        contact->GetFixtureA()->GetBody()->GetUserData();
+//        contact->GetFixtureB()->GetBody()->GetUserData();
 
     }
     
