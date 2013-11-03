@@ -8,9 +8,27 @@
 
 
 #import "CC3Scene.h"
+#import "CC3UtilityMeshNodes.h"
+
 
 #import "Box2D.h"
 #import "Cocos3dAppDelegate.h"
+
+/** Enumeration of camera zoom options. */
+typedef enum {
+	kCameraZoomNone,			/**< Inside the scene. */
+	kCameraZoomStraightBack,	/**< Zoomed straight out to view complete scene. */
+	kCameraZoomBackTopRight,	/**< Zoomed out to back top right view of complete scene. */
+} CameraZoomType;
+
+/** Enumeration of lighting options. */
+typedef enum {
+	kLightingSun,				/**< Sunshine. */
+	kLightingFog,				/**< Sunshine with fog. */
+	kLightingFlashlight,		/**< Nightime with flashlight. */
+	kLightingGrayscale,			/**< Sunshine with grayscale post-processing filter. */
+	kLightingDepth,				/**< Display the depth buffer using a post-processing filter. */
+} LightingType;
 
 /** A sample application-specific CC3Scene subclass.*/
 @interface Cocos3dScene : CC3Scene {
@@ -29,6 +47,18 @@
     //joystick
     CGPoint _playerDirectionControl;
 	CGPoint _playerLocationControl;
+    
+    
+    CC3PlaneNode* _ground;
+    
+    //camera & light
+    CC3Node* _origCamTarget;
+	CC3Node* _camTarget;
+	CameraZoomType _cameraZoomType;
+    LightingType _lightingType;
+	BOOL _isManagingShadows : 1;
+
+
 }
 
 /**

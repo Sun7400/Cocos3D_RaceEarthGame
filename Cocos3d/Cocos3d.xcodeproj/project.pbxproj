@@ -336,6 +336,7 @@
 		4C2E77701826CF170072F6F0 /* CCNodeExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776C1826CF170072F6F0 /* CCNodeExtensions.m */; };
 		4C2E77711826CF170072F6F0 /* Joystick.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776E1826CF170072F6F0 /* Joystick.m */; };
 		4C2E77731826D0480072F6F0 /* JoystickThumb.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77721826D0480072F6F0 /* JoystickThumb.png */; };
+		4C2E77751826DD610072F6F0 /* Grass.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77741826DD610072F6F0 /* Grass.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -995,6 +996,7 @@
 		4C2E776D1826CF170072F6F0 /* Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
 		4C2E776E1826CF170072F6F0 /* Joystick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Joystick.m; sourceTree = "<group>"; };
 		4C2E77721826D0480072F6F0 /* JoystickThumb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = JoystickThumb.png; sourceTree = "<group>"; };
+		4C2E77741826DD610072F6F0 /* Grass.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Grass.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1928,15 +1930,16 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				4C2E77721826D0480072F6F0 /* JoystickThumb.png */,
-				4C2E773A18242DA30072F6F0 /* blocks.png */,
 				4C2E77231823EFE30072F6F0 /* Balls.pod */,
-				4C2E714C18231D420072F6F0 /* Info.plist */,
-				4C2E718018231D420072F6F0 /* hello-world.pod */,
-				4C2E718218231D420072F6F0 /* fps_images.png */,
+				4C2E773A18242DA30072F6F0 /* blocks.png */,
 				4C2E718418231D420072F6F0 /* fps_images-hd.png */,
 				4C2E718618231D420072F6F0 /* fps_images-ipadhd.png */,
+				4C2E718218231D420072F6F0 /* fps_images.png */,
+				4C2E77741826DD610072F6F0 /* Grass.jpg */,
+				4C2E718018231D420072F6F0 /* hello-world.pod */,
 				4C2E714D18231D420072F6F0 /* Icons */,
+				4C2E714C18231D420072F6F0 /* Info.plist */,
+				4C2E77721826D0480072F6F0 /* JoystickThumb.png */,
 				4C2E716A18231D420072F6F0 /* Launch Images */,
 			);
 			name = Resources;
@@ -2218,6 +2221,7 @@
 				4C2E714318231D420072F6F0 /* CC3SingleTextureAlphaTest.fsh in Resources */,
 				4C2E773B18242DA30072F6F0 /* blocks.png in Resources */,
 				4C2E712D18231D410072F6F0 /* CC3MultiTextureConfigurable.fsh in Resources */,
+				4C2E77751826DD610072F6F0 /* Grass.jpg in Resources */,
 				4C2E712118231D410072F6F0 /* CC3BumpMapObjectSpaceAlphaTest.fsh in Resources */,
 				4C2E713118231D410072F6F0 /* CC3NoTextureAlphaTest.fsh in Resources */,
 				4C2E6F6C18231D3E0072F6F0 /* ChangeLog in Resources */,

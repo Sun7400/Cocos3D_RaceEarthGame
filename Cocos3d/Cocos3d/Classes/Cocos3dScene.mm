@@ -17,6 +17,8 @@ extern "C" {
 #import "CC3Camera.h"
 #import "CC3Light.h"
 
+#import "CC3ControllableLayer.h"
+
 #import "CC3ShaderProgram.h"
 #import "CC3ParametricMeshNodes.h"
 #import "CC3UtilityMeshNodes.h"
@@ -35,6 +37,8 @@ enum {
 @interface Cocos3dScene ()
 {
     float y;
+    
+    CGSize screenSize;
 }
 @end
 
@@ -46,6 +50,8 @@ enum {
 -(void) dealloc {
 	[super dealloc];
 }
+
+#pragma mark Init process
 
 /**
  * Constructs the 3D scene prior to the scene being displayed.
@@ -69,71 +75,41 @@ enum {
  *    font to a mesh results in a LOT of triangles. When adapting this template project for your own
  *    application, REMOVE the POD file 'hello-world.pod' from the Resources folder of your project.
  */
+#define kNoFadeIn						0.0f
+
 -(void) initializeScene {
-    CGSize screenSize = [CCDirector sharedDirector].winSize;
-    
-    _playerDirectionControl = CGPointZero;
-	_playerLocationControl = CGPointZero;
-    
-	// Create the camera, place it back a bit, and add it to the world
-	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 0.0, 10.0 );
-	[self addChild: cam];
-    
-	// Create a light, place it back and to the left at a specific
-	// position (not just directional lighting), and add it to the world
-	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
-	lamp.location = cc3v( -2.0, 0.0, 0.0 );
-	lamp.isDirectionalOnly = NO;
-	[cam addChild: lamp];
-    
-  	CC3Light* lamp2 = [CC3Light nodeWithName: @"Lamp"];
-	lamp2.location = cc3v( 0.0, 1.0, -5.0 );
-	lamp2.isDirectionalOnly = NO;
-	[cam addChild: lamp2];
-    
-    
-    
-	// This is the simplest way to load a POD resource file and add the
-	// nodes to the CC3World, if no customized resource subclass is needed.
-//    [self addContentFromPODFile:@"Balls.pod" withName:@"BeachBall"];
-	[self addContentFromPODFile: @"Balls.pod"];
-    [self addContentFromPODFile: @"earth.pod"];
+    screenSize = [CCDirector sharedDirector].winSize;
+    previousTime = nil;
+
 
     
-	// Create OpenGL ES buffers for the vertex arrays to keep things fast and efficient,
-	// and to save memory, release the vertex data in main memory because it is now redundant.
-	[self createGLBuffers];
-	[self releaseRedundantContent];
-	
-    // Select an appropriate shader program for each mesh node in this scene now. If this step
-	// is omitted, a shader program will be selected for each mesh node the first time that mesh
-	// node is drawn. Doing it now adds some additional time up front, but avoids potential pauses
-	// as each shader program is loaded as needed the first time it is needed during drawing.
-    [self selectShaderPrograms];
-    
-    // With complex scenes, the drawing of objects that are not within view of the camera will
-	// consume GPU resources unnecessarily, and potentially degrading app performance. We can
-	// avoid drawing objects that are not within view of the camera by assigning a bounding
-	// volume to each mesh node. Once assigned, the bounding volume is automatically checked
-	// to see if it intersects the camera's frustum before the mesh node is drawn. If the node's
-	// bounding volume intersects the camera frustum, the node will be drawn. If the bounding
-	// volume does not intersect the camera's frustum, the node will not be visible to the camera,
-	// and the node will not be drawn. Bounding volumes can also be used for collision detection
-	// between nodes. You can create bounding volumes automatically for most rigid (non-skinned)
-	// objects by using the createBoundingVolumes on a node. This will create bounding volumes
-	// for all decendant rigid mesh nodes of that node. Invoking the method on your scene will
-	// create bounding volumes for all rigid mesh nodes in the scene. Bounding volumes are not
-	// automatically created for skinned meshes that modify vertices using bones. Because the
-	// vertices can be moved arbitrarily by the bones, you must create and assign bounding
-	// volumes to skinned mesh nodes yourself, by determining the extent of the bounding
-	// volume you need, and creating a bounding volume that matches it. Finally, checking
-	// bounding volumes involves a small computation cost. For objects that you know will be
-	// in front of the camera at all times, you can skip creating a bounding volume for that
-	// node, letting it be drawn on each frame.
-	[self createBoundingVolumes];
+    [self initCustomState];			// Set up any initial state tracked by this subclass
 
-    // ------------------------------------------
+    [self preloadAssets];			// Loads, compiles, links, and pre-warms all shader programs
+    // used by this scene, and certain textures.
+    
+    [self setWorld];
+    [self addFrameBody];
+    [self addBall];
+    [self addEarth];
+    
+//	[self addBackdrop];				// Add a sky-blue colored backdrop
+//	[self addGround];				// Add a ground plane to provide some perspective to the user
+
+    //    [self drawLine];
+    //    [self drawCube];
+    //    [self drawSphere];
+    
+    [self configureLighting];		// Set up the lighting
+	[self configureCamera];			// Check out some interesting camera options.
+
+    // Configure all content added so far in a standard manner. This illustrates how CC3Node
+	// properties and methods can be applied to large assemblies of nodes, and even the entire
+	// scene itself, allowing us to perform this only once, for all current scene content.
+	// For content that is added dynamically after this initial content, this method will also
+	// be invoked on each new content component.
+	[self configureForScene: self andMaterializeWithDuration: kNoFadeIn];
+
 	
 	// That's it! The scene is now constructed and is good to go.
 	
@@ -164,51 +140,281 @@ enum {
     
  	// ------------------------------------------
    
-    //    [self drawLine];
-    //    [self drawCube];
-    //    [self drawSphere];
-    
-    
-	// And to add some dynamism, we'll animate the 'hello, world' message
-	// using a couple of actions...
+
+
+
+}
+
+/**
+ * By populating this method, you can add add additional scene content dynamically and
+ * asynchronously after the scene is open.
+ *
+ * This method is invoked from a code block defined in the onOpen method, that is run on a
+ * background thread by the CC3GLBackgrounder available through the backgrounder property of
+ * the viewSurfaceManager. It adds content dynamically and asynchronously while rendering is
+ * running on the main rendering thread.
+ *
+ * You can add content on the background thread at any time while your scene is running, by
+ * defining a code block and running it on the backgrounder of the viewSurfaceManager. The
+ * example provided in the onOpen method is a template for how to do this, but it does not
+ * need to be invoked only from the onOpen method.
+ *
+ * Certain assets, notably shader programs, will cause short, but unavoidable, delays in the
+ * rendering of the scene, because certain finalization steps from shader compilation occur on
+ * the main thread. Shaders and certain other critical assets should be pre-loaded in the
+ * initializeScene method prior to the opening of this scene.
+ */
+-(void) addSceneContentAsynchronously {}
+
+
+/**
+ * Invoked by the customized initializeScene to set up any initial state for
+ * this customized scene. This is broken into a separate method so that the
+ * initializeScene method can focus on loading the artifacts of the 3D scene.
+ */
+-(void) initCustomState {
 	
-	// Fetch the 'hello, world' object that was loaded from the POD file and start it rotating
-//	CC3MeshNode* helloTxt = (CC3MeshNode*)[self getNodeNamed: @"Hello"];
-//	CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-//														  rotateBy: cc3v(0.0, 30.0, 0.0)];
-//	[helloTxt runAction: [CCRepeatForever actionWithAction: partialRot]];
-//	
-//	// To make things a bit more appealing, set up a repeating up/down cycle to
-//	// change the color of the text from the original red to blue, and back again.
-//	GLfloat tintTime = 8.0f;
-//	ccColor3B startColor = helloTxt.color;
-//	ccColor3B endColor = { 50, 0, 200 };
-//	CCActionInterval* tintDown = [CCTintTo actionWithDuration: tintTime
-//														  red: endColor.r
-//														green: endColor.g
-//														 blue: endColor.b];
-//	CCActionInterval* tintUp = [CCTintTo actionWithDuration: tintTime
-//														red: startColor.r
-//													  green: startColor.g
-//													   blue: startColor.b];
-//    CCActionInterval* tintCycle = [CCSequence actionOne: tintDown two: tintUp];
-//	[helloTxt runAction: [CCRepeatForever actionWithAction: tintCycle]];
+	_isManagingShadows = NO;
+	_playerDirectionControl = CGPointZero;
+	_playerLocationControl = CGPointZero;
+	
+	// The order in which meshes are drawn to the GL engine can be tailored to your needs.
+	// The default is to draw opaque objects first, then alpha-blended objects in reverse
+	// Z-order. Since this example has lots of similar teapots and robots to draw in this
+	// example, we choose to also group objects by meshes here, while also drawing opaque
+	// objects first, and translucent objects in reverse Z-order.
+	//
+	// To experiment with an alternate drawing order, set a different node sequence sorter
+	// by uncommenting one of the lines here and commenting out the others. The third option
+	// performs no grouping and draws the objects in the order they are added to the scene below.
+	// The fourth option does not use a drawing sequencer, and draws the objects hierarchically
+	// instead. With this, notice that the transparent beach ball now appears opaque, because
+	// it  was added first, and is traversed ahead of other objects in the hierarchical assembly,
+	// resulting it in being drawn first, and so it cannot blend with the background.
+	//
+	// You can of course write your own node sequencers to customize to your specific
+	// app needs. Best to change the node sequencer before any model objects are added.
+	self.drawingSequencer = [CC3BTreeNodeSequencer sequencerLocalContentOpaqueFirst];
+	//	self.drawingSequencer = [CC3BTreeNodeSequencer sequencerLocalContentOpaqueFirstGroupMeshes];
+	//	self.drawingSequencer = [CC3BTreeNodeSequencer sequencerLocalContentOpaqueFirstGroupTextures];
+	//	self.drawingSequencer = nil;
+}
 
-    
-    CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
-    [self removeChild:globe];
-    
-	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
 
-//    CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
-    
-    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
-    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
-    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-                                                          rotateBy: cc3v(0.0, 30.0, 0.0)];
-    [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
+/**
+ * Pre-loads certain assets, such as shader programs, and certain textures, prior to the
+ * scene being displayed.
+ *
+ * Much of the scene is loaded on a background thread, while the scene is visible. However,
+ * the handling of some assets on the background thread can interrupt the main rendering thread.
+ *
+ * The GL drivers often leave the final stages of shader compilation and configuration until
+ * the first time the shader program is used to render an object. This can often introduce a
+ * short, unwanted pause if the shader program is loaded while the scene is running.
+ *
+ * Unfortunately, although resources such as models, textures, and shader programs can be loaded
+ * on a background thread, the final stages of shader programs compilation must be performed on
+ * the primary rendering thread. Because of this, the only way to avoid an unwanted pause while
+ * a shader program compilation is finalized is to therefore perform all shader program loading
+ * prior to the scene being displayed, including shader programs that may not be required until
+ * additional content is loaded later in the scene on a background thread.
+ *
+ * In order to ensure that the shader programs will be available when the models are loaded
+ * at a later point in the scene (usually via background loading), the cache must be configured
+ * to retain the loaded shader programs even though they will not immediately be used to display
+ * any models. This is done by turning on the value of the class-side isPreloading property.
+ *
+ * In addition, the automatic creation of mipmaps on larger textures, particularly cube-map
+ * textures (which require a set of six mipmaps), can cause excessive work for the GPU in
+ * the background, which can spill over into a delay on the primary rendering thread.
+ *
+ * As a result, a large cube-map texture is loaded here and cached, for later access once
+ * the model that uses it is loaded in the background.
+ */
+-(void) preloadAssets {
 
+}
+
+/** Various options for configuring interesting camera behaviours. */
+-(void) configureCamera {
+//	CC3Camera* cam = self.activeCamera;
     
+    // Create the camera, place it back a bit, and add it to the world
+	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+	cam.location = cc3v( 0.0, 0.0, 3.0 );
+	[self addChild: cam];
+    
+    // Create a light, place it back and to the left at a specific
+	// position (not just directional lighting), and add it to the world
+	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+	lamp.location = cc3v( -2.0, 0.0, 0.0 );
+	lamp.isDirectionalOnly = NO;
+	[cam addChild: lamp];
+    
+  	CC3Light* lamp2 = [CC3Light nodeWithName: @"Lamp"];
+	lamp2.location = cc3v( 0.0, 1.0, -5.0 );
+	lamp2.isDirectionalOnly = NO;
+	[cam addChild: lamp2];
+    
+    
+	// Camera starts out embedded in the scene.
+	_cameraZoomType = kCameraZoomNone;
+	
+	// The camera comes from the POD file and is actually animated.
+	// Stop the camera from being animated so the user can control it via the user interface.
+	[cam disableAnimation];
+	
+	// Keep track of which object the camera is pointing at
+	_origCamTarget = cam.target;
+	_camTarget = _origCamTarget;
+    
+	// For cameras, the scale property determines camera zooming, and the effective field-of-view.
+	// You can adjust this value to play with camera zooming. Conversely, if you find that objects
+	// in the periphery of your view appear elongated, you can adjust the fieldOfView and/or
+	// uniformScale properties to reduce this "fish-eye" effect. See the notes of the CC3Camera
+	// fieldOfView property for more on this.
+	cam.uniformScale = 0.9;
+	
+	// You can configure the camera to use orthographic projection instead of the default
+	// perspective projection by setting the isUsingParallelProjection property to YES.
+	// You will also need to adjust the scale to match the different projection.
+    //	cam.isUsingParallelProjection = YES;
+    //	cam.uniformScale = 0.015;
+	
+	// To see the effect of mounting a camera on a moving object, uncomment the following
+	// lines to mount the camera on a virtual boom attached to the beach ball.
+	// Since the beach ball rotates as it bounces, you might also want to comment out the
+	// CC3RotateBy action that is run on the beachBall in the addBeachBall method!
+    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
+    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
+    //	cam.rotation = cc3v(0.0, 90.0, 0.0);	// Point camera out over the beach ball
+    
+	// To see the effect of mounting a camera on a moving object AND having the camera track a
+	// location or object, even as the moving object bounces and rotates, uncomment the following
+	// lines to mount the camera on a virtual boom attached to the beach ball, but stay pointed at
+	// the moving rainbow teapot, even as the beach ball that the camera is mounted on bounces and
+	// rotates. In this case, you do not need to comment out the CC3RotateBy action that is run on
+	// the beachBall in the addBeachBall method
+    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
+    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
+    //	cam.target = teapotSatellite;			// Look toward the rainbow teapot...
+    //	cam.shouldTrackTarget = YES;			// ...and track it as it moves
+}
+
+/** Configure the lighting. */
+-(void) configureLighting {
+	
+    
+    
+	// Start out with a sunny day
+	_lightingType = kLightingSun;
+    
+	// Set the ambient scene lighting.
+	self.ambientLight = ccc4f(0.3, 0.3, 0.3, 1.0);
+    
+	// Adjust the relative ambient and diffuse lighting of the main light to
+	// improve realisim, particularly on shadow effects.
+//	_robotLamp.diffuseColor = ccc4f(0.8, 0.8, 0.8, 1.0);
+	
+	// Another mechansim for adjusting shadow intensities is shadowIntensityFactor.
+	// For better effect, set here to a value less than one to lighten the shadows
+	// cast by the main light.
+//	_robotLamp.shadowIntensityFactor = 0.75f;
+	
+	// The light from the robot POD file is animated to move back and forth, changing
+	// the lighting of the scene as it moves. To turn this animation off, comment out
+	// the following line. This can be useful when reviewing shadowing.
+    //	[_robotLamp disableAnimation];
+	
+}
+
+/**
+ * Configures the specified node and all its descendants for use in the scene, and then fades
+ * them in over the specified duration, in seconds. Specifying zero for the duration will
+ * instantly materialize the node without employing any fading.
+ *
+ * This scene is highly complex, and it helps to configure the nodes within it in a standardized
+ * manner, including whether we use VBO's to manage the vertices, whether the vertices need to
+ * also be retained in main memory, whether bounding volumes are required, and to force early
+ * selection of shaders for use with the nodes.
+ *
+ * The specified node can be the root of an arbitrarily complex node tree, and the behaviour
+ * applied in this method is propagated to all descendant nodes of the specified node, and the
+ * materialization fading will be applied to the entire node tree. The specified node can even
+ * be the entire scene itself.
+ */
+-(void) configureForScene: (CC3Node*) aNode andMaterializeWithDuration: (ccTime) duration {
+	
+	// Create OpenGL buffers for the vertex arrays to keep things fast and efficient, and
+	// to save memory, release the vertex data in main memory because it is now redundant.
+	// However, because we can add shadow volumes dynamically to any node, we need to keep the
+	// vertex location, index and skinning data of all meshes around to build shadow volumes.
+	// If we had added the shadow volumes before here, we wouldn't have to retain this data.
+	[aNode retainVertexLocations];
+	[aNode retainVertexIndices];
+	[aNode retainVertexWeights];
+	[aNode retainVertexMatrixIndices];
+    
+    // Create OpenGL ES buffers for the vertex arrays to keep things fast and efficient,
+	// and to save memory, release the vertex data in main memory because it is now redundant.
+	[aNode createGLBuffers];
+	[aNode releaseRedundantContent];
+	
+	// This scene is quite complex, containing many objects. As the user moves the camera
+	// around the scene, objects move in and out of the camera's field of view. At any time,
+	// there may be a number of objects that are out of view of the camera. With such a scene
+	// layout, we can save significant GPU processing by not drawing those objects. To make
+	// that happen, we assign a bounding volume to each mesh node. Once that is done, only
+	// those objects whose bounding volumes intersect the camera frustum will be drawn.
+	// Bounding volumes can also be used for collision detection between nodes. You can see
+	// the effect of not using bounding volumes on drawing perfomance by commenting out the
+	// following line and taking note of the drop in performance for this scene. However,
+	// testing bounding volumes against the camera's frustum does take some CPU processing,
+	// and in scenes where all or most of the objects are in front of the camera at all times,
+	// using bounding volumes may actually result in slightly lower performance. By including
+	// or not including the line below, you can test both scenarios and decide which approach
+	// is best for your particular scene. Bounding volumes are not automatically created for
+	// skinned meshes, such as the runners and mallet. See the addSkinnedRunners and
+	// addSkinnedMallet methods to see how those bounding volumes are added manually.
+	[aNode createBoundingVolumes];
+	
+	// The following line displays the bounding volumes of each node. The bounding volume of
+	// all mesh nodes, except the globe, contains both a spherical and bounding-box bounding
+	// volume, to optimize testing. For something extra cool, touch the robot arm to see the
+	// bounding volume of the particle emitter grow and shrink dynamically. Use the joystick
+	// controls or gestures to back the camera away to get the full effect. You can also turn
+	// on this property on individual nodes or node structures. See the notes for this property
+	// and the shouldDrawBoundingVolume property in the CC3Node class notes.
+    //	aNode.shouldDrawAllBoundingVolumes = YES;
+	
+	// Select an appropriate shader program for each mesh node in this scene now. If this step
+	// is omitted, a shader program will be selected for each mesh node the first time that mesh
+	// node is drawn. Doing it now adds some additional time up front, but avoids potential pauses
+	// as each shader program is loaded as needed the first time it is needed during drawing.
+	[aNode selectShaderPrograms];
+	
+	// For an interesting effect, to draw text descriptors and/or bounding boxes on every node
+	// during debugging, uncomment one or more of the following lines. The first line displays
+	// short descriptive text for each node (including class, node name & tag). The second line
+	// displays bounding boxes of only those nodes with local content (eg- meshes). The third
+	// line shows the bounding boxes of all nodes, including those with local content AND
+	// structural nodes. You can also turn on any of these properties at a more granular level
+	// by using these and similar methods on individual nodes or node structures. See the CC3Node
+	// class notes. This family of properties can be particularly useful during development to
+	// track down display issues.
+    //	aNode.shouldDrawAllDescriptors = YES;
+    //	aNode.shouldDrawAllLocalContentWireframeBoxes = YES;
+    //	aNode.shouldDrawAllWireframeBoxes = YES;
+	
+	// Use a standard CCFadeIn to fade the node in over the specified duration
+	if (duration > 0.0f) {
+		aNode.opacity = 0;	// Needed for cocos2d 1.x, which doesn't start fade-in from zero opacity
+		[aNode runAction: [CCFadeIn actionWithDuration: duration]];
+	}
+}
+
+- (void)setWorld
+{
     ////Box 2D
     // Define the gravity vector.
     b2Vec2 gravity;
@@ -228,9 +434,49 @@ enum {
     
     b2ContactListener *myListener = new b2ContactListener();
     _world->SetContactListener(myListener);
+}
+
+#pragma mark Create objects
+/**
+ * If we're not overlaying the device camera, creates the clear-blue-sky backdrop.
+ * Or install a textured backdrop by uncommenting the last line of this method.
+ * See the notes for the backdrop property for more info.
+ */
+#define kSkyColor						ccc4f(0.4, 0.5, 0.9, 1.0)
+-(void) addBackdrop {
+//	if (self.cc3Layer.isOverlayingDeviceCamera) return;
+	self.backdrop = [CC3ClipSpaceNode nodeWithColor: kSkyColor];
+    //	self.backdrop = [CC3ClipSpaceNode nodeWithTexture: [CC3Texture textureFromFile: kBrickTextureFile]];
+}
+
+/**
+ * Add a large circular grass-covered ground to give everything perspective.
+ * The ground is tessellated into many smaller faces to improve realism of spotlight.
+ */
+#define kGroundName						@"Ground"
+#define kGroundTextureFile				@"Grass.jpg"
+-(void) addGround {
+	_ground = [CC3PlaneNode nodeWithName: kGroundName];
+	[_ground populateAsDiskWithRadius: 1500 andTessellation: CC3TessellationMake(8, 32)];
+	_ground.texture = [CC3Texture textureFromFile: kGroundTextureFile];
     
-    
-    
+	// To experiment with repeating textures, uncomment the following line
+	[_ground repeatTexture: (ccTex2F){10, 10}];	// Grass
+    //	[_ground repeatTexture: (ccTex2F){3, 3}];	// MountainGrass
+	
+	_ground.location = cc3v(0.0, -100.0, 0.0);
+	_ground.rotation = cc3v(-90.0, 180.0, 0.0);
+	_ground.shouldCullBackFaces = NO;	// Show the ground from below as well.
+	_ground.touchEnabled = YES;			// Allow the ground to be selected by touch events.
+	[_ground retainVertexLocations];	// Retain location data in main memory, even when it
+    // is buffered to a GL VBO via releaseRedundantContent,
+    // so that it may be accessed for further calculations
+    // when dropping objects on the ground.
+	[self addChild: _ground];
+}
+
+- (void)addFrameBody
+{
     // Define the ground body.
     b2BodyDef groundBodyDef;
     groundBodyDef.position.Set(0, 0); // bottom-left corner
@@ -259,51 +505,22 @@ enum {
     ///
     
     
-    
-    
-    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
-    
-    // Create sprite and add it to the layer
-//    CC3Texture* bgTex = [CC3Texture textureFromFile:@"Default.png"];
-//    
-//    CGSize rectSize = CGSizeMake(6, 10);
-//    CC3PlaneNode* spritePlane = [CC3PlaneNode node];
-//    [spritePlane populateAsRectangleWithSize: rectSize
-//                                    andPivot: ccp(rectSize.width / 2.0, rectSize.height / 2.0)
-//                                 withTexture: bgTex
-//                               invertTexture: TRUE];
-//    spritePlane.location = cc3v( 0.0, 0.0, -1 );
-//	[self addChild: spritePlane];
-    
-    
-    
-    
-// EARTH
-    //create earth body
-    b2BodyDef earthBodyDef;
-    earthBodyDef.type = b2_dynamicBody;
-    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-    earthBodyDef.userData = earth;
-    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
-    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
-    
 
-    // Create circle shape
-    b2CircleShape circle;
-    circle.m_radius = screenSize.width/5/PTM_RATIO;
+}
 
-    // Create shape definition and add to body
-    b2FixtureDef earthShapeDef;
-    earthShapeDef.shape = &circle;
-    earthShapeDef.density = 0.0f;
-//    earthShapeDef.friction = 0.2f;
-    earthShapeDef.restitution = 0.35f;
-    earthShapeDef.isSensor = FALSE;
-    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
+- (void)addBall
+{
+    // This is the simplest way to load a POD resource file and add the
+	// nodes to the CC3World, if no customized resource subclass is needed.
+    //    [self addContentFromPODFile:@"Balls.pod" withName:@"BeachBall"];
+	[self addContentFromPODFile: @"Balls.pod"];
+    
+    CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
+    [self removeChild:globe];
+    
+	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
 
-    
-    
-// BALL
+    // BALL
     // Create ball body
     b2BodyDef ballBodyDef2;
     ballBodyDef2.type = b2_dynamicBody;
@@ -314,21 +531,21 @@ enum {
     
     // Create circle shape
     b2CircleShape circle2;
-//    circle2.m_radius = 10;
+    //    circle2.m_radius = 10;
     circle2.m_radius = screenSize.width/5/PTM_RATIO;
     
     // Create shape definition and add to body
     b2FixtureDef ballShapeDef2;
     ballShapeDef2.shape = &circle2;
     ballShapeDef2.density = 2.0f;
-//    ballShapeDef2.friction = 0.2f;
+    //    ballShapeDef2.friction = 0.2f;
     ballShapeDef2.restitution = 0.35f;
     ballShapeDef2.isSensor = FALSE;
     _ballFixture = ballBody2->CreateFixture(&ballShapeDef2);
     
     
     
-//White Ball
+    //White Ball
     // Create ball body
     b2BodyDef whiteBallBodyDef;
     whiteBallBodyDef.type = b2_dynamicBody;
@@ -349,33 +566,93 @@ enum {
     whiteBallShapeDef.restitution = 0.35f;
     whiteBallShapeDef.isSensor = FALSE;
     _ballFixture = whiteBallBody->CreateFixture(&whiteBallShapeDef);
-
-
-    previousTime = nil;
-
-
 }
 
-/**
- * By populating this method, you can add add additional scene content dynamically and
- * asynchronously after the scene is open.
- *
- * This method is invoked from a code block defined in the onOpen method, that is run on a
- * background thread by the CC3GLBackgrounder available through the backgrounder property of
- * the viewSurfaceManager. It adds content dynamically and asynchronously while rendering is
- * running on the main rendering thread.
- *
- * You can add content on the background thread at any time while your scene is running, by
- * defining a code block and running it on the backgrounder of the viewSurfaceManager. The
- * example provided in the onOpen method is a template for how to do this, but it does not
- * need to be invoked only from the onOpen method.
- *
- * Certain assets, notably shader programs, will cause short, but unavoidable, delays in the
- * rendering of the scene, because certain finalization steps from shader compilation occur on
- * the main thread. Shaders and certain other critical assets should be pre-loaded in the
- * initializeScene method prior to the opening of this scene.
- */
--(void) addSceneContentAsynchronously {}
+- (void)addEarth
+{
+    [self addContentFromPODFile: @"earth.pod"];
+
+    
+    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
+    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+                                                          rotateBy: cc3v(0.0, 30.0, 0.0)];
+    [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
+    
+    //create earth body
+    b2BodyDef earthBodyDef;
+    earthBodyDef.type = b2_dynamicBody;
+    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+    earthBodyDef.userData = earth;
+    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
+    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
+    
+    
+    // Create circle shape
+    b2CircleShape circle;
+    circle.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef earthShapeDef;
+    earthShapeDef.shape = &circle;
+    earthShapeDef.density = 0.0f;
+    //    earthShapeDef.friction = 0.2f;
+    earthShapeDef.restitution = 0.35f;
+    earthShapeDef.isSensor = FALSE;
+    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
+    
+
+    
+}
+
+- (void)drawLine
+{
+    CC3Vector arr_location[] = {0,0,0, 5,5, 5 };
+    CC3LineNode* lineNode = [CC3LineNode nodeWithName: @"Line test"];
+    [lineNode populateAsLineStripWith: 2
+                             vertices: arr_location
+                            andRetain: YES];
+    lineNode.color = ccGREEN;
+    
+    [self addChild:lineNode];
+}
+
+- (void)drawCube
+{
+    CC3Vector a = CC3VectorMake(10.0, 10.0, 10.0);
+    CC3Vector b = CC3VectorMake(20.0, 20.0, 20.0);
+    CC3Box box = CC3BoxFromMinMax(a, b);
+    
+    CC3BoxNode *cube = [[CC3BoxNode alloc] init];
+    [cube setColor:ccc3(255.0, 0.0, 0.0)];
+    [cube populateAsSolidBox:box];
+    [cube setLocation:CC3VectorMake(10, y, 10)];
+    
+    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+                                                          rotateBy: cc3v(0.0, 10.0, 5.0)];
+    [cube runAction: [CCRepeatForever actionWithAction: partialRot]];
+    
+    [self addChild:cube];
+    
+}
+
+- (void)drawSphere
+{
+    //    CC3Vector center = CC3VectorMake(5.0, 5.0, 5.0);
+    //    CC3Sphere box = CC3SphereMake(center, 2.0);
+    
+    CC3SphereNode *sphere = [[CC3SphereNode alloc] init];
+    [sphere setColor:ccc3(0.0, 100.0, 0.0)];
+    [sphere populateAsSphereWithRadius:3.0 andTessellation:CC3TessellationMake(1, 2)];
+    //    [sphere a]
+    
+    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+                                                          rotateBy: cc3v(0.0, 10.0, 5.0)];
+    [sphere runAction: [CCRepeatForever actionWithAction: partialRot]];
+    
+    [self addChild:sphere];
+    
+}
 
 
 #pragma mark Updating custom activity
@@ -391,7 +668,7 @@ enum {
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
     [self updateCameraFromControls: visitor.deltaTime];
 
-    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+//    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
 //    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
     b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
     _world->SetGravity(gravity);
@@ -604,7 +881,6 @@ enum {
 	[self drawShadows];							// Shadows are drawn with a different visitor
 }
 
-
 #pragma mark Handling touch events 
 
 /**
@@ -623,7 +899,7 @@ enum {
 -(void) touchEvent: (uint) touchType at: (CGPoint) touchPoint {
 
 	//Add a new body/atlas sprite at the touched location
-	NSLog(@"Touch %@ %d %d", touchType, touchPoint.x, touchPoint.y);
+	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
 }
 
 /**
@@ -637,127 +913,6 @@ enum {
  */
 -(void) nodeSelected: (CC3Node*) aNode byTouchEvent: (uint) touchType at: (CGPoint) touchPoint {}
 
-- (void)drawLine
-{
-    CC3Vector arr_location[] = {0,0,0, 5,5, 5 };
-    CC3LineNode* lineNode = [CC3LineNode nodeWithName: @"Line test"];
-    [lineNode populateAsLineStripWith: 2
-                             vertices: arr_location
-                            andRetain: YES];
-    lineNode.color = ccGREEN;
-    
-    [self addChild:lineNode];
-}
-
-- (void)drawCube
-{
-    CC3Vector a = CC3VectorMake(10.0, 10.0, 10.0);
-    CC3Vector b = CC3VectorMake(20.0, 20.0, 20.0);
-    CC3Box box = CC3BoxFromMinMax(a, b);
-    
-    CC3BoxNode *cube = [[CC3BoxNode alloc] init];
-    [cube setColor:ccc3(255.0, 0.0, 0.0)];
-    [cube populateAsSolidBox:box];
-    [cube setLocation:CC3VectorMake(10, y, 10)];
-    
-    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-    														  rotateBy: cc3v(0.0, 10.0, 5.0)];
-    [cube runAction: [CCRepeatForever actionWithAction: partialRot]];
-    
-    [self addChild:cube];
-
-}
-
-- (void)drawSphere
-{
-    CC3Vector center = CC3VectorMake(5.0, 5.0, 5.0);
-    CC3Sphere box = CC3SphereMake(center, 2.0);
-    
-    CC3SphereNode *sphere = [[CC3SphereNode alloc] init];
-    [sphere setColor:ccc3(0.0, 100.0, 0.0)];
-    [sphere populateAsSphereWithRadius:3.0 andTessellation:CC3TessellationMake(1, 2)];
-//    [sphere a]
-    
-    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-                                                          rotateBy: cc3v(0.0, 10.0, 5.0)];
-    [sphere runAction: [CCRepeatForever actionWithAction: partialRot]];
-    
-    [self addChild:sphere];
-    
-}
-
-- (void)addPhysics
-{
-//    CC3Node a = [[CC3Node alloc] init];
-//    a.
-}
-
-
-//-(void) addNewSpriteAtPosition:(CGPoint)p
-//{
-//	CCLOG(@"Add sprite %0.2f x %02.f",p.x,p.y);
-//	// Define the dynamic body.
-//	//Set up a 1m squared box in the physics world
-//	b2BodyDef bodyDef;
-//	bodyDef.type = b2_dynamicBody;
-//	bodyDef.position.Set(p.x/PTM_RATIO, p.y/PTM_RATIO);
-//	b2Body *body = _world->CreateBody(&bodyDef);
-//	
-//	// Define another box shape for our dynamic body.
-//	b2PolygonShape dynamicBox;
-//	dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
-//	
-//	// Define the dynamic body fixture.
-//	b2FixtureDef fixtureDef;
-//	fixtureDef.shape = &dynamicBox;
-//	fixtureDef.density = 1.0f;
-//	fixtureDef.friction = 0.3f;
-//	body->CreateFixture(&fixtureDef);
-//	
-//    
-////	CC3Node *parent = [[CC3Node alloc] init];
-//	
-//	//We have a 64x64 sprite sheet with 4 different 32x32 images.  The following code is
-//	//just randomly picking one of the images
-//	int idx = (CCRANDOM_0_1() > .5 ? 0:1);
-//	int idy = (CCRANDOM_0_1() > .5 ? 0:1);
-//	CCPhysicsSprite *sprite = [CCPhysicsSprite spriteWithTexture:spriteTexture_ rect:CGRectMake(32 * idx,32 * idy,32,32)];
-//	[parent addChild:sprite];
-//	[self addChild:parent];
-//    
-//	[sprite setPTMRatio:PTM_RATIO];
-//	[sprite setB2Body:body];
-//	[sprite setPosition: ccp( p.x, p.y)];
-//    
-//    
-//    
-//}
-
-
-
-
-
-//-(void) updateScene: (ccTime) dt
-//{
-	//It is recommended that a fixed time step is used with Box2D for stability
-	//of the simulation, however, we are using a variable time step here.
-	//You need to make an informed choice, the following URL is useful
-	//http://gafferongames.com/game-physics/fix-your-timestep/
-
-//    NSLog(@"update!");
-    
-//	int32 velocityIterations = 8;
-//	int32 positionIterations = 1;
-//	
-//	// Instruct the world to perform a single step of simulation. It is
-//	// generally best to keep the time step and iterations fixed.
-//	_world->Step(dt, velocityIterations, positionIterations);
-//}
-
-//- (void)updateScene:(ccTime)dt
-//{
-//    y -= 10;
-//}
 
 
 @end
