@@ -136,30 +136,30 @@ enum {
     
     
     // Define the ground body.
-//    b2BodyDef groundBodyDef;
-//    groundBodyDef.position.Set(0, 0); // bottom-left corner
-//    
-//    // The body is also added to the world.
-//    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
-//    
-//    // Define the ground box shape.
-//    b2PolygonShape groundBox;
-//    
-//    // bottom
-//    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
-//    groundBody->CreateFixture(&groundBox,0);
-//    
-//    // top
-//    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
-//    groundBody->CreateFixture(&groundBox,0);
-//    
-//    // left
-//    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
-//    groundBody->CreateFixture(&groundBox,0);
-//    
-//    // right
-//    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
-//    groundBody->CreateFixture(&groundBox,0);
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(0, 0); // bottom-left corner
+    
+    // The body is also added to the world.
+    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+    
+    // Define the ground box shape.
+    b2PolygonShape groundBox;
+    
+    // bottom
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // top
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // left
+    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // right
+    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBody->CreateFixture(&groundBox,0);
     ///
     
     
@@ -520,19 +520,25 @@ enum {
     }
     
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
-         //do something with the contact
-        NSLog(@"contact!");
-        b2Vec2 va = contact->GetFixtureA()->GetBody()->GetLinearVelocity();
-        va.x = -va.x;
-        va.y = -va.y;
+
         b2Body *a = contact->GetFixtureA()->GetBody();
-        a->SetLinearVelocity(va);
-        
-        b2Vec2 vb = contact->GetFixtureB()->GetBody()->GetLinearVelocity();
-        vb.x = -vb.x;
-        vb.y = -vb.y;
         b2Body *b = contact->GetFixtureB()->GetBody();
-        b->SetLinearVelocity(vb);
+
+        double ax = a->GetPosition().x;
+        double ay = a->GetPosition().y;
+        double bx = b->GetPosition().x;
+        double by = b->GetPosition().y;
+        double distance = sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
+        NSLog(@"dis: %f", distance);
+        
+        double originLength = 10;
+        double fx = ax-bx;
+        double fy = bx-by;
+        
+        if (distance < originLength) {
+            a->ApplyForce(b2Vec2(fx*100, fy*100), a->GetLocalCenter());
+            b->ApplyForce(b2Vec2(-fx*100, -fy*100), b->GetLocalCenter());
+        }
     }
     
     previousTime = CACurrentMediaTime();
