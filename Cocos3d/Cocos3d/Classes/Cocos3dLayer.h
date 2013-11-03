@@ -9,9 +9,13 @@
 
 #import "CC3Layer.h"
 
+#import "Joystick.h"
+
 
 /** A sample application-specific CC3Layer subclass. */
 @interface Cocos3dLayer : CC3Layer {
+    Joystick* directionJoystick;
+	Joystick* locationJoystick;
 }
 
 @end

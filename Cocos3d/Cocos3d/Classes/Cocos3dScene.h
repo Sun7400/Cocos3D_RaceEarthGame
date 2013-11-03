@@ -25,6 +25,28 @@
     
     CCTexture2D *spriteTexture_;	// weak ref
 
+    
+    //joystick
+    CGPoint _playerDirectionControl;
+	CGPoint _playerLocationControl;
 }
+
+/**
+ * This property controls the velocity of the change in direction of the 3D camera
+ * (a proxy for the player). This property is set by the CC3Layer, from the velocity
+ * of the corresponding joystick control.
+ *
+ * The initial value of this property is CGPointZero.
+ */
+@property(nonatomic, assign) CGPoint playerDirectionControl;
+
+/**
+ * This property controls the velocity of the change in location of the 3D camera
+ * (a proxy for the player). This property is set by the CC3Layer, from the velocity
+ * of the corresponding joystick control.
+ *
+ * The initial value of this property is CGPointZero.
+ */
+@property(nonatomic, assign) CGPoint playerLocationControl;
 
 @end

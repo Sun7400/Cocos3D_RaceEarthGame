@@ -332,6 +332,10 @@
 		4C2E772218235AFB0072F6F0 /* Cocos3dScene.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E771F18235AFB0072F6F0 /* Cocos3dScene.mm */; };
 		4C2E77241823EFE30072F6F0 /* Balls.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77231823EFE30072F6F0 /* Balls.pod */; };
 		4C2E773B18242DA30072F6F0 /* blocks.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E773A18242DA30072F6F0 /* blocks.png */; };
+		4C2E776F1826CF170072F6F0 /* CCNodeAdornments.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776A1826CF170072F6F0 /* CCNodeAdornments.m */; };
+		4C2E77701826CF170072F6F0 /* CCNodeExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776C1826CF170072F6F0 /* CCNodeExtensions.m */; };
+		4C2E77711826CF170072F6F0 /* Joystick.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776E1826CF170072F6F0 /* Joystick.m */; };
+		4C2E77731826D0480072F6F0 /* JoystickThumb.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77721826D0480072F6F0 /* JoystickThumb.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -984,6 +988,13 @@
 		4C2E771F18235AFB0072F6F0 /* Cocos3dScene.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Cocos3dScene.mm; path = Classes/Cocos3dScene.mm; sourceTree = "<group>"; };
 		4C2E77231823EFE30072F6F0 /* Balls.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Balls.pod; sourceTree = "<group>"; };
 		4C2E773A18242DA30072F6F0 /* blocks.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blocks.png; sourceTree = "<group>"; };
+		4C2E77691826CF170072F6F0 /* CCNodeAdornments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCNodeAdornments.h; sourceTree = "<group>"; };
+		4C2E776A1826CF170072F6F0 /* CCNodeAdornments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCNodeAdornments.m; sourceTree = "<group>"; };
+		4C2E776B1826CF170072F6F0 /* CCNodeExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCNodeExtensions.h; sourceTree = "<group>"; };
+		4C2E776C1826CF170072F6F0 /* CCNodeExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCNodeExtensions.m; sourceTree = "<group>"; };
+		4C2E776D1826CF170072F6F0 /* Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
+		4C2E776E1826CF170072F6F0 /* Joystick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Joystick.m; sourceTree = "<group>"; };
+		4C2E77721826D0480072F6F0 /* JoystickThumb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = JoystickThumb.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1044,6 +1055,7 @@
 		4C2E6E1318231D3C0072F6F0 /* Cocos3d */ = {
 			isa = PBXGroup;
 			children = (
+				4C2E77681826CF170072F6F0 /* Controls */,
 				4C2E75E71823459E0072F6F0 /* asset */,
 				4C2E714A18231D420072F6F0 /* README! */,
 				4C2E6E1418231D3C0072F6F0 /* libs */,
@@ -1916,6 +1928,7 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C2E77721826D0480072F6F0 /* JoystickThumb.png */,
 				4C2E773A18242DA30072F6F0 /* blocks.png */,
 				4C2E77231823EFE30072F6F0 /* Balls.pod */,
 				4C2E714C18231D420072F6F0 /* Info.plist */,
@@ -2119,6 +2132,19 @@
 			path = Joints;
 			sourceTree = "<group>";
 		};
+		4C2E77681826CF170072F6F0 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				4C2E77691826CF170072F6F0 /* CCNodeAdornments.h */,
+				4C2E776A1826CF170072F6F0 /* CCNodeAdornments.m */,
+				4C2E776B1826CF170072F6F0 /* CCNodeExtensions.h */,
+				4C2E776C1826CF170072F6F0 /* CCNodeExtensions.m */,
+				4C2E776D1826CF170072F6F0 /* Joystick.h */,
+				4C2E776E1826CF170072F6F0 /* Joystick.m */,
+			);
+			path = Controls;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2206,6 +2232,7 @@
 				4C2E712B18231D410072F6F0 /* CC3ClipSpaceTexturable.vsh in Resources */,
 				4C2E713318231D410072F6F0 /* CC3NoTextureReflect.fsh in Resources */,
 				4C2E715518231D420072F6F0 /* Icon-40@2x.png in Resources */,
+				4C2E77731826D0480072F6F0 /* JoystickThumb.png in Resources */,
 				4C2E713B18231D410072F6F0 /* CC3PointSpritesAlphaTest.fsh in Resources */,
 				4C2E716118231D420072F6F0 /* Icon-60@2x.png in Resources */,
 				4C2E718118231D420072F6F0 /* hello-world.pod in Resources */,
@@ -2258,6 +2285,7 @@
 				4C2E70D218231D410072F6F0 /* CC3RenderSurfaces.m in Sources */,
 				4C2E70D818231D410072F6F0 /* CC3ViewController.m in Sources */,
 				4C2E704518231D3F0072F6F0 /* CC3Mesh.m in Sources */,
+				4C2E77701826CF170072F6F0 /* CCNodeExtensions.m in Sources */,
 				4C2E708918231D400072F6F0 /* CC3GLView-GLES1.m in Sources */,
 				4C2E6EE718231D3D0072F6F0 /* CCTMXXMLParser.m in Sources */,
 				4C2E6F7E18231D3E0072F6F0 /* ray2.c in Sources */,
@@ -2355,6 +2383,7 @@
 				4C2E70A718231D400072F6F0 /* CC3OSExtensions.m in Sources */,
 				4C2E77121823588C0072F6F0 /* b2TOISolver.cpp in Sources */,
 				4C2E77161823588C0072F6F0 /* b2Joint.cpp in Sources */,
+				4C2E776F1826CF170072F6F0 /* CCNodeAdornments.m in Sources */,
 				4C2E70AE18231D410072F6F0 /* CC3UIViewController.m in Sources */,
 				4C2E70A318231D400072F6F0 /* CC3PointParticles.m in Sources */,
 				4C2E772118235AFB0072F6F0 /* Cocos3dLayer.mm in Sources */,
@@ -2401,6 +2430,7 @@
 				4C2E76FC1823588C0072F6F0 /* b2CollidePolygon.cpp in Sources */,
 				4C2E702118231D3F0072F6F0 /* CC3NodeAnimation.m in Sources */,
 				4C2E705218231D400072F6F0 /* CC3Billboard.m in Sources */,
+				4C2E77711826CF170072F6F0 /* Joystick.m in Sources */,
 				4C2E705818231D400072F6F0 /* CC3BoundingVolumes.m in Sources */,
 				4C2E77051823588C0072F6F0 /* b2Settings.cpp in Sources */,
 				4C2E706A18231D400072F6F0 /* CC3ParametricMeshNodes.m in Sources */,

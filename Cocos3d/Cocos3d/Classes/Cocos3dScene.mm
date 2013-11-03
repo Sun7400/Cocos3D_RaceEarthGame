@@ -40,6 +40,9 @@ enum {
 
 @implementation Cocos3dScene
 
+@synthesize playerDirectionControl=_playerDirectionControl;
+@synthesize playerLocationControl=_playerLocationControl;
+
 -(void) dealloc {
 	[super dealloc];
 }
@@ -69,6 +72,9 @@ enum {
 -(void) initializeScene {
     CGSize screenSize = [CCDirector sharedDirector].winSize;
     
+    _playerDirectionControl = CGPointZero;
+	_playerLocationControl = CGPointZero;
+    
 	// Create the camera, place it back a bit, and add it to the world
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
 	cam.location = cc3v( 0.0, 0.0, 10.0 );
@@ -86,6 +92,8 @@ enum {
 	lamp2.isDirectionalOnly = NO;
 	[cam addChild: lamp2];
     
+    
+    
 	// This is the simplest way to load a POD resource file and add the
 	// nodes to the CC3World, if no customized resource subclass is needed.
 //    [self addContentFromPODFile:@"Balls.pod" withName:@"BeachBall"];
@@ -98,11 +106,94 @@ enum {
 	[self createGLBuffers];
 	[self releaseRedundantContent];
 	
+    // Select an appropriate shader program for each mesh node in this scene now. If this step
+	// is omitted, a shader program will be selected for each mesh node the first time that mesh
+	// node is drawn. Doing it now adds some additional time up front, but avoids potential pauses
+	// as each shader program is loaded as needed the first time it is needed during drawing.
     [self selectShaderPrograms];
     
+    // With complex scenes, the drawing of objects that are not within view of the camera will
+	// consume GPU resources unnecessarily, and potentially degrading app performance. We can
+	// avoid drawing objects that are not within view of the camera by assigning a bounding
+	// volume to each mesh node. Once assigned, the bounding volume is automatically checked
+	// to see if it intersects the camera's frustum before the mesh node is drawn. If the node's
+	// bounding volume intersects the camera frustum, the node will be drawn. If the bounding
+	// volume does not intersect the camera's frustum, the node will not be visible to the camera,
+	// and the node will not be drawn. Bounding volumes can also be used for collision detection
+	// between nodes. You can create bounding volumes automatically for most rigid (non-skinned)
+	// objects by using the createBoundingVolumes on a node. This will create bounding volumes
+	// for all decendant rigid mesh nodes of that node. Invoking the method on your scene will
+	// create bounding volumes for all rigid mesh nodes in the scene. Bounding volumes are not
+	// automatically created for skinned meshes that modify vertices using bones. Because the
+	// vertices can be moved arbitrarily by the bones, you must create and assign bounding
+	// volumes to skinned mesh nodes yourself, by determining the extent of the bounding
+	// volume you need, and creating a bounding volume that matches it. Finally, checking
+	// bounding volumes involves a small computation cost. For objects that you know will be
+	// in front of the camera at all times, you can skip creating a bounding volume for that
+	// node, letting it be drawn on each frame.
 	[self createBoundingVolumes];
 
+    // ------------------------------------------
+	
+	// That's it! The scene is now constructed and is good to go.
+	
+	// To help you find your scene content once it is loaded, the onOpen method below contains
+	// code to automatically move the camera so that it frames the scene. You can remove that
+	// code once you know where you want to place your camera.
+	
+	// If you encounter problems displaying your models, you can uncomment one or more of the
+	// following lines to help you troubleshoot. You can also use these features on a single node,
+	// or a structure of nodes. See the CC3Node notes for more explanation of these properties.
+	// Also, the onOpen method below contains additional troubleshooting code you can comment
+	// out to move the camera so that it will display the entire scene automatically.
+	
+	// Displays short descriptive text for each node (including class, node name & tag).
+	// The text is displayed centered on the pivot point (origin) of the node.
+    //	self.shouldDrawAllDescriptors = YES;
+	
+	// Displays bounding boxes around those nodes with local content (eg- meshes).
+    //	self.shouldDrawAllLocalContentWireframeBoxes = YES;
+	
+	// Displays bounding boxes around all nodes. The bounding box for each node
+	// will encompass its child nodes.
+    //	self.shouldDrawAllWireframeBoxes = YES;
+	
+	// If you encounter issues creating and adding nodes, or loading models from
+	// files, the following line is used to log the full structure of the scene.
+	LogInfo(@"The structure of this scene is: %@", [self structureDescription]);
     
+ 	// ------------------------------------------
+   
+    //    [self drawLine];
+    //    [self drawCube];
+    //    [self drawSphere];
+    
+    
+	// And to add some dynamism, we'll animate the 'hello, world' message
+	// using a couple of actions...
+	
+	// Fetch the 'hello, world' object that was loaded from the POD file and start it rotating
+//	CC3MeshNode* helloTxt = (CC3MeshNode*)[self getNodeNamed: @"Hello"];
+//	CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+//														  rotateBy: cc3v(0.0, 30.0, 0.0)];
+//	[helloTxt runAction: [CCRepeatForever actionWithAction: partialRot]];
+//	
+//	// To make things a bit more appealing, set up a repeating up/down cycle to
+//	// change the color of the text from the original red to blue, and back again.
+//	GLfloat tintTime = 8.0f;
+//	ccColor3B startColor = helloTxt.color;
+//	ccColor3B endColor = { 50, 0, 200 };
+//	CCActionInterval* tintDown = [CCTintTo actionWithDuration: tintTime
+//														  red: endColor.r
+//														green: endColor.g
+//														 blue: endColor.b];
+//	CCActionInterval* tintUp = [CCTintTo actionWithDuration: tintTime
+//														red: startColor.r
+//													  green: startColor.g
+//													   blue: startColor.b];
+//    CCActionInterval* tintCycle = [CCSequence actionOne: tintDown two: tintUp];
+//	[helloTxt runAction: [CCRepeatForever actionWithAction: tintCycle]];
+
     
     CC3MeshNode* globe = (CC3MeshNode*)[self getNodeNamed: @"Globe"];
     [self removeChild:globe];
@@ -110,7 +201,12 @@ enum {
 	CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"BeachBall"];
 
 //    CC3MeshNode* bBall = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+    
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
+    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+                                                          rotateBy: cc3v(0.0, 30.0, 0.0)];
+    [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
 
     
     ////Box 2D
@@ -257,171 +353,7 @@ enum {
 
     previousTime = nil;
 
-/*
-    CGSize screenSize = [CCDirector sharedDirector].winSize;
 
-	// Create the camera, place it back a bit, and add it to the scene
-	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 0.0, 6.0 );
-	[self addChild: cam];
-
-	// Create a light, place it back and to the left at a specific
-	// position (not just directional lighting), and add it to the scene
-	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
-	lamp.location = cc3v( -2.0, 0.0, 0.0 );
-	lamp.isDirectionalOnly = NO;
-	[cam addChild: lamp];
-
-	// This is the simplest way to load a POD resource file and add the
-	// nodes to the CC3Scene, if no customized resource subclass is needed.
-//	[self addContentFromPODFile: @"hello-world.pod"];
-    [self addContentFromPODResourceFile: @"earth.pod"];
-	
-	// Create OpenGL buffers for the vertex arrays to keep things fast and efficient, and to
-	// save memory, release the vertex content in main memory because it is now redundant.
-	[self createGLBuffers];
-	[self releaseRedundantContent];
-	
-	// Select an appropriate shader program for each mesh node in this scene now. If this step
-	// is omitted, a shader program will be selected for each mesh node the first time that mesh
-	// node is drawn. Doing it now adds some additional time up front, but avoids potential pauses
-	// as each shader program is loaded as needed the first time it is needed during drawing.
-	[self selectShaderPrograms];
-
-	// With complex scenes, the drawing of objects that are not within view of the camera will
-	// consume GPU resources unnecessarily, and potentially degrading app performance. We can
-	// avoid drawing objects that are not within view of the camera by assigning a bounding
-	// volume to each mesh node. Once assigned, the bounding volume is automatically checked
-	// to see if it intersects the camera's frustum before the mesh node is drawn. If the node's
-	// bounding volume intersects the camera frustum, the node will be drawn. If the bounding
-	// volume does not intersect the camera's frustum, the node will not be visible to the camera,
-	// and the node will not be drawn. Bounding volumes can also be used for collision detection
-	// between nodes. You can create bounding volumes automatically for most rigid (non-skinned)
-	// objects by using the createBoundingVolumes on a node. This will create bounding volumes
-	// for all decendant rigid mesh nodes of that node. Invoking the method on your scene will
-	// create bounding volumes for all rigid mesh nodes in the scene. Bounding volumes are not
-	// automatically created for skinned meshes that modify vertices using bones. Because the
-	// vertices can be moved arbitrarily by the bones, you must create and assign bounding
-	// volumes to skinned mesh nodes yourself, by determining the extent of the bounding
-	// volume you need, and creating a bounding volume that matches it. Finally, checking
-	// bounding volumes involves a small computation cost. For objects that you know will be
-	// in front of the camera at all times, you can skip creating a bounding volume for that
-	// node, letting it be drawn on each frame.
-	[self createBoundingVolumes];
-
-	
-	// ------------------------------------------
-	
-	// That's it! The scene is now constructed and is good to go.
-	
-	// To help you find your scene content once it is loaded, the onOpen method below contains
-	// code to automatically move the camera so that it frames the scene. You can remove that
-	// code once you know where you want to place your camera.
-	
-	// If you encounter problems displaying your models, you can uncomment one or more of the
-	// following lines to help you troubleshoot. You can also use these features on a single node,
-	// or a structure of nodes. See the CC3Node notes for more explanation of these properties.
-	// Also, the onOpen method below contains additional troubleshooting code you can comment
-	// out to move the camera so that it will display the entire scene automatically.
-	
-	// Displays short descriptive text for each node (including class, node name & tag).
-	// The text is displayed centered on the pivot point (origin) of the node.
-//	self.shouldDrawAllDescriptors = YES;
-	
-	// Displays bounding boxes around those nodes with local content (eg- meshes).
-//	self.shouldDrawAllLocalContentWireframeBoxes = YES;
-	
-	// Displays bounding boxes around all nodes. The bounding box for each node
-	// will encompass its child nodes.
-//	self.shouldDrawAllWireframeBoxes = YES;
-	
-	// If you encounter issues creating and adding nodes, or loading models from
-	// files, the following line is used to log the full structure of the scene.
-	LogInfo(@"The structure of this scene is: %@", [self structureDescription]);
-	
-	// ------------------------------------------
-    
-    
-    y = 10;
-//    [self drawLine];
-//    [self drawCube];
-//    [self drawSphere];
-    
-    
-    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
-    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
-    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-                                                          rotateBy: cc3v(0.0, 30.0, 0.0)];
-    [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
-    
-    
-    ////Box 2D
-    // Define the gravity vector.
-    b2Vec2 gravity;
-    gravity.Set(0.0f, -1.0f);
-    
-    // Do we want to let bodies sleep?
-    // This will speed up the physics simulation
-    // note * bodies seem to sleep when at rest for too long and will only wake up again on collision?
-    bool doSleep = false;
-    
-    // Construct a world object, which will hold and simulate the rigid bodies.
-    _world = new b2World(gravity, doSleep);
-    _world->SetContinuousPhysics(false);
-    
-    // Define the ground body.
-    b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0, 0); // bottom-left corner
-    
-    // The body is also added to the world.
-    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
-    
-    // Define the ground box shape.
-    b2PolygonShape groundBox;
-    
-    // bottom
-    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // top
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // left
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // right
-    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
-    groundBody->CreateFixture(&groundBox,0);
-    ///
-    
-//
-//	// And to add some dynamism, we'll animate the 'hello, world' message
-//	// using a couple of actions...
-//	
-//	// Fetch the 'hello, world' object that was loaded from the POD file and start it rotating
-//	CC3MeshNode* helloTxt = (CC3MeshNode*)[self getNodeNamed: @"Hello"];
-//	CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-//														  rotateBy: cc3v(0.0, 30.0, 0.0)];
-//	[helloTxt runAction: [CCRepeatForever actionWithAction: partialRot]];
-//	
-//	// To make things a bit more appealing, set up a repeating up/down cycle to
-//	// change the color of the text from the original red to blue, and back again.
-//	GLfloat tintTime = 8.0f;
-//	ccColor3B startColor = helloTxt.color;
-//	ccColor3B endColor = { 50, 0, 200 };
-//	CCActionInterval* tintDown = [CCTintTo actionWithDuration: tintTime
-//														  red: endColor.r
-//														green: endColor.g
-//														 blue: endColor.b];
-//	CCActionInterval* tintUp = [CCTintTo actionWithDuration: tintTime
-//														red: startColor.r
-//													  green: startColor.g
-//													   blue: startColor.b];
-//	 CCActionInterval* tintCycle = [CCSequence actionOne: tintDown two: tintUp];
-//	[helloTxt runAction: [CCRepeatForever actionWithAction: tintCycle]];
-*/
 }
 
 /**
@@ -457,6 +389,8 @@ enum {
  * For more info, read the notes of this method on CC3Node.
  */
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
+    [self updateCameraFromControls: visitor.deltaTime];
+
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
 //    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
     b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
@@ -544,6 +478,39 @@ enum {
     previousTime = CACurrentMediaTime();
 }
 
+
+/** Update the location and direction of looking of the 3D camera */
+-(void) updateCameraFromControls: (ccTime) dt {
+	CC3Camera* cam = self.activeCamera;
+	
+	// Update the location of the player (the camera)
+	if ( _playerLocationControl.x || _playerLocationControl.y ) {
+		
+		// Get the X-Y delta value of the control and scale it to something suitable
+		CGPoint delta = ccpMult(_playerLocationControl, dt * 100.0);
+        
+		// We want to move the camera forward and backward, and side-to-side,
+		// from the camera's (the user's) point of view.
+		// Forward and backward will be along the globalForwardDirection of the camera,
+		// and side-to-side will be along the globalRightDirection of the camera.
+		// These two directions are scaled by Y and X delta components respectively, which
+		// in turn are set by the joystick, and combined into a single directional vector.
+		// This represents the movement of the camera. The new location is simply the old
+		// camera location plus the movement.
+		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),
+											CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
+		cam.location = CC3VectorAdd(cam.location, moveVector);
+	}
+    
+	// Update the direction the camera is pointing by panning and inclining using rotation.
+	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
+		CGPoint delta = ccpMult(_playerDirectionControl, dt * 30.0);		// Factor to set speed of rotation.
+		CC3Vector camRot = cam.rotation;
+		camRot.y -= delta.x;
+		camRot.x += delta.y;
+		cam.rotation = camRot;
+	}
+}
 
 #pragma mark Scene opening and closing
 
