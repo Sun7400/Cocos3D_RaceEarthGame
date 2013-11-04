@@ -90,7 +90,8 @@ enum {
     
     [self setWorld];
     [self addFrameBody];
-    [self addBall];
+
+//    [self addBall];
     [self addEarth];
     
 //	[self addBackdrop];				// Add a sky-blue colored backdrop
@@ -243,7 +244,7 @@ enum {
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
 	cam.location = cc3v( 0.0, 0.0, 3.0 );
 	[self addChild: cam];
-    
+
     // Create a light, place it back and to the left at a specific
 	// position (not just directional lighting), and add it to the world
 	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
@@ -442,8 +443,8 @@ enum {
  * Or install a textured backdrop by uncommenting the last line of this method.
  * See the notes for the backdrop property for more info.
  */
-#define kSkyColor						ccc4f(0.4, 0.5, 0.9, 1.0)
 -(void) addBackdrop {
+#define kSkyColor						ccc4f(0.4, 0.5, 0.9, 1.0)
 //	if (self.cc3Layer.isOverlayingDeviceCamera) return;
 	self.backdrop = [CC3ClipSpaceNode nodeWithColor: kSkyColor];
     //	self.backdrop = [CC3ClipSpaceNode nodeWithTexture: [CC3Texture textureFromFile: kBrickTextureFile]];
@@ -453,9 +454,10 @@ enum {
  * Add a large circular grass-covered ground to give everything perspective.
  * The ground is tessellated into many smaller faces to improve realism of spotlight.
  */
+-(void) addGround {
 #define kGroundName						@"Ground"
 #define kGroundTextureFile				@"Grass.jpg"
--(void) addGround {
+    
 	_ground = [CC3PlaneNode nodeWithName: kGroundName];
 	[_ground populateAsDiskWithRadius: 1500 andTessellation: CC3TessellationMake(8, 32)];
 	_ground.texture = [CC3Texture textureFromFile: kGroundTextureFile];
@@ -464,8 +466,8 @@ enum {
 	[_ground repeatTexture: (ccTex2F){10, 10}];	// Grass
     //	[_ground repeatTexture: (ccTex2F){3, 3}];	// MountainGrass
 	
-	_ground.location = cc3v(0.0, -100.0, 0.0);
-	_ground.rotation = cc3v(-90.0, 180.0, 0.0);
+	_ground.location = cc3v(0.0, -5.0, 0.0);
+	_ground.rotation = cc3v(-75.0, 0.0, 0.0);
 	_ground.shouldCullBackFaces = NO;	// Show the ground from below as well.
 	_ground.touchEnabled = YES;			// Allow the ground to be selected by touch events.
 	[_ground retainVertexLocations];	// Retain location data in main memory, even when it
@@ -760,11 +762,13 @@ enum {
 -(void) updateCameraFromControls: (ccTime) dt {
 	CC3Camera* cam = self.activeCamera;
 	
+#define LOCATION_CONTROL_SPEED 5
+#define DIRECTION_CONTROL_SPEED 10
 	// Update the location of the player (the camera)
 	if ( _playerLocationControl.x || _playerLocationControl.y ) {
 		
 		// Get the X-Y delta value of the control and scale it to something suitable
-		CGPoint delta = ccpMult(_playerLocationControl, dt * 100.0);
+		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
         
 		// We want to move the camera forward and backward, and side-to-side,
 		// from the camera's (the user's) point of view.
@@ -781,7 +785,7 @@ enum {
     
 	// Update the direction the camera is pointing by panning and inclining using rotation.
 	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
-		CGPoint delta = ccpMult(_playerDirectionControl, dt * 30.0);		// Factor to set speed of rotation.
+		CGPoint delta = ccpMult(_playerDirectionControl, dt * DIRECTION_CONTROL_SPEED);		// Factor to set speed of rotation.
 		CC3Vector camRot = cam.rotation;
 		camRot.y -= delta.x;
 		camRot.x += delta.y;
