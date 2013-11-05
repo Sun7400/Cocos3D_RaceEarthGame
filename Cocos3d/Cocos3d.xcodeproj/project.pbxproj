@@ -337,6 +337,8 @@
 		4C2E77711826CF170072F6F0 /* Joystick.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E776E1826CF170072F6F0 /* Joystick.m */; };
 		4C2E77731826D0480072F6F0 /* JoystickThumb.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77721826D0480072F6F0 /* JoystickThumb.png */; };
 		4C2E77751826DD610072F6F0 /* Grass.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77741826DD610072F6F0 /* Grass.jpg */; };
+		4C2E77E218286B2B0072F6F0 /* IntroducingPOD_float.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C2E77E118286B2B0072F6F0 /* IntroducingPOD_float.pod */; };
+		4C2E77E518286B5A0072F6F0 /* Models.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E77E418286B5A0072F6F0 /* Models.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -997,6 +999,9 @@
 		4C2E776E1826CF170072F6F0 /* Joystick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Joystick.m; sourceTree = "<group>"; };
 		4C2E77721826D0480072F6F0 /* JoystickThumb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = JoystickThumb.png; sourceTree = "<group>"; };
 		4C2E77741826DD610072F6F0 /* Grass.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Grass.jpg; sourceTree = "<group>"; };
+		4C2E77E118286B2B0072F6F0 /* IntroducingPOD_float.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = IntroducingPOD_float.pod; sourceTree = "<group>"; };
+		4C2E77E318286B5A0072F6F0 /* Models.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Models.h; sourceTree = "<group>"; };
+		4C2E77E418286B5A0072F6F0 /* Models.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Models.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1930,6 +1935,7 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C2E77E118286B2B0072F6F0 /* IntroducingPOD_float.pod */,
 				4C2E77231823EFE30072F6F0 /* Balls.pod */,
 				4C2E773A18242DA30072F6F0 /* blocks.png */,
 				4C2E718418231D420072F6F0 /* fps_images-hd.png */,
@@ -1994,6 +2000,8 @@
 				4C2E771E18235AFB0072F6F0 /* Cocos3dLayer.mm */,
 				4C2E717D18231D420072F6F0 /* Cocos3dScene.h */,
 				4C2E771F18235AFB0072F6F0 /* Cocos3dScene.mm */,
+				4C2E77E318286B5A0072F6F0 /* Models.h */,
+				4C2E77E418286B5A0072F6F0 /* Models.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2222,6 +2230,7 @@
 				4C2E773B18242DA30072F6F0 /* blocks.png in Resources */,
 				4C2E712D18231D410072F6F0 /* CC3MultiTextureConfigurable.fsh in Resources */,
 				4C2E77751826DD610072F6F0 /* Grass.jpg in Resources */,
+				4C2E77E218286B2B0072F6F0 /* IntroducingPOD_float.pod in Resources */,
 				4C2E712118231D410072F6F0 /* CC3BumpMapObjectSpaceAlphaTest.fsh in Resources */,
 				4C2E713118231D410072F6F0 /* CC3NoTextureAlphaTest.fsh in Resources */,
 				4C2E6F6C18231D3E0072F6F0 /* ChangeLog in Resources */,
@@ -2339,6 +2348,7 @@
 				4C2E707A18231D400072F6F0 /* CC3OpenGLProgPipeline.m in Sources */,
 				4C2E6E3918231D3C0072F6F0 /* CCActionTiledGrid.m in Sources */,
 				4C2E70C918231D410072F6F0 /* CC3Fog.m in Sources */,
+				4C2E77E518286B5A0072F6F0 /* Models.m in Sources */,
 				4C2E6E8018231D3C0072F6F0 /* CCMenuItem.m in Sources */,
 				4C2E6E1B18231D3C0072F6F0 /* CCActionCamera.m in Sources */,
 				4C2E70B918231D410072F6F0 /* CC3DataStreams.m in Sources */,

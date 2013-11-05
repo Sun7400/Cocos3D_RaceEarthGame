@@ -88,18 +88,27 @@ enum {
     [self preloadAssets];			// Loads, compiles, links, and pre-warms all shader programs
     // used by this scene, and certain textures.
     
-    [self setWorld];
-    [self addFrameBody];
+    //Box2D
+//    [self setWorld];
+//    [self addFrameBody];
 
+    /*
+     * Draw Backround
+     */
+    [self addBackdrop];
+
+    
 //    [self addBall];
     [self addEarth];
     
-//	[self addBackdrop];				// Add a sky-blue colored backdrop
 //	[self addGround];				// Add a ground plane to provide some perspective to the user
+//    [self addRobot];				// Add an animated robot arm, a light, and a camera. This POD file
+    // contains the primary camera of this scene.
 
+//    [self drawMeshNode];
     //    [self drawLine];
-    //    [self drawCube];
-    //    [self drawSphere];
+//    [self drawCube];
+//    [self drawSphere];
     
     [self configureLighting];		// Set up the lighting
 	[self configureCamera];			// Check out some interesting camera options.
@@ -233,29 +242,71 @@ enum {
  * the model that uses it is loaded in the background.
  */
 -(void) preloadAssets {
-
+#if CC3_GLSL
+    
+	// Strongly cache the shader programs loaded here, so they'll be availble
+	// when models are loaded on the background loading thread.
+	CC3ShaderProgram.isPreloading = YES;
+    
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3MultiTextureConfigurable.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3SingleTextureAlphaTest.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3SingleTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"BumpMap.vsh"
+//							andFragmentShaderFile: @"BumpMap.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PureColor.vsh"
+//							andFragmentShaderFile: @"CC3PureColor.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3SingleTextureReflect.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3NoTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PointSprites.vsh"
+//							andFragmentShaderFile: @"CC3PointSprites.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3ClipSpaceTexturable.vsh"
+//							andFragmentShaderFile: @"CC3ClipSpaceNoTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
+//							andFragmentShaderFile: @"CC3BumpMapTangentSpace.fsh"];
+    
+	// Now pre-load shader programs that originate in PFX resources
+	CC3Resource.isPreloading = YES;
+    
+//	[CC3PFXResource resourceFromFile: kPostProcPFXFile];
+//	[CC3PFXResource resourceFromFile: kMasksPFXFile];
+	
+	// All done with shader pre-loading...let me know if any further shader programs are loaded
+	// during the scene operation.
+	CC3Resource.isPreloading = NO;
+	CC3ShaderProgram.isPreloading = NO;
+    
+#endif	// CC3_GLSL
+	
+	// The automatic generation of mipmap in the environment map texture on the background
+	// thread causes a short delay in rendering on the main thread. The text glyph texture
+	// also requires substantial time for mipmap generation. For such textures, by loading
+	// the texture, creating the mipmap, and caching the texture here, we can avoid the delay.
+	// All other textures are loaded on the background thread.
+	CC3Texture.isPreloading = YES;
+	[CC3Texture textureFromFile: @"Arial32BMGlyph.png"];
+#if !CC3_OGLES_1
+	[CC3Texture textureCubeFromFilePattern: @"EnvMap%@.jpg"];
+#endif	// !CC3_OGLES_1
+	CC3Texture.isPreloading = NO;
 }
 
 /** Various options for configuring interesting camera behaviours. */
 -(void) configureCamera {
-//	CC3Camera* cam = self.activeCamera;
+	CC3Camera* cam = self.activeCamera;
     
-    // Create the camera, place it back a bit, and add it to the world
-	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 0.0, 3.0 );
-	[self addChild: cam];
+//    // Create the camera, place it back a bit, and add it to the world
+//	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+//	cam.location = cc3v( 0.0, 0.0, 3.0 );
+//	[self addChild: cam];
+//
 
-    // Create a light, place it back and to the left at a specific
-	// position (not just directional lighting), and add it to the world
-	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
-	lamp.location = cc3v( -2.0, 0.0, 0.0 );
-	lamp.isDirectionalOnly = NO;
-	[cam addChild: lamp];
-    
-  	CC3Light* lamp2 = [CC3Light nodeWithName: @"Lamp"];
-	lamp2.location = cc3v( 0.0, 1.0, -5.0 );
-	lamp2.isDirectionalOnly = NO;
-	[cam addChild: lamp2];
     
     
 	// Camera starts out embedded in the scene.
@@ -305,6 +356,12 @@ enum {
 /** Configure the lighting. */
 -(void) configureLighting {
 	
+      // Create a light, place it back and to the left at a specific
+    // position (not just directional lighting), and add it to the world
+    CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+    lamp.location = cc3v( 0.0, 0.0, 5.0 );
+    lamp.isDirectionalOnly = NO;
+    [self addChild: lamp];
     
     
 	// Start out with a sunny day
@@ -477,6 +534,48 @@ enum {
 	[self addChild: _ground];
 }
 
+/** Loads a POD file containing an animated robot arm, a camera, and an animated light. */
+-(void) addRobot {
+#define kPODRobotRezNodeName			@"RobotPODRez"
+#define kRobotPODFile					@"IntroducingPOD_float.pod"
+#define kRobotCameraName				@"Camera01"
+#define kPODLightName					@"FDirect01"
+	// We introduce a specialized resource subclass, not because it is needed in general,
+	// but because the original PVR demo app ignores some data in the POD file. To replicate
+	// the PVR demo faithfully, we must do the same, by tweaking the loader to act accordingly
+	// by creating a specialized subclass.
+	CC3ResourceNode* podRezNode = [CC3PODResourceNode nodeWithName: kPODRobotRezNodeName];
+	podRezNode.resource = [IntroducingPODResource resourceFromFile: kRobotPODFile];
+	
+	// If you want to stop the robot arm from being animated, uncomment the following line.
+    //	[podRezNode disableAllAnimation];
+	
+	podRezNode.touchEnabled = YES;
+	[self addChild: podRezNode];
+	
+	// Retrieve the camera in the POD and cache it for later access.
+	_robotCam = (CC3Camera*)[podRezNode getNodeNamed: kRobotCameraName];
+	
+	// Retrieve the light from the POD resource so we can track its location as it moves via animation
+	_robotLamp = (CC3Light*)[podRezNode getNodeNamed: kPODLightName];
+	
+	// Start the animation of the robot arm and bouncing lamp from the PVR POD file contents.
+	// But we'll have a bit of fun with the animation, as follows.
+	// The basic animation in the POD pirouettes the robot arm in a complex movement...
+	CCActionInterval* pirouette = [CC3Animate actionWithDuration: 5.0];
+	
+	// Extract only the initial bending-down motion from the animation, reverse it to create
+	// a stand-up motion, and paste the two actions together to create a bowing motion.
+	CCActionInterval* bendDown = [CC3Animate actionWithDuration: 1.8 limitFrom: 0.0 to: 0.15];
+	CCActionInterval* standUp = [bendDown reverse];
+	CCActionInterval* takeABow = [CCSequence actionOne: bendDown two: standUp];
+	
+	// Now...put it all together. The robot arm performs its pirouette, and then takes a bow,
+	// over and over again.
+	[podRezNode runAction: [CCRepeatForever actionWithAction: [CCSequence actionOne: pirouette
+																				two: takeABow]]];
+}
+
 - (void)addFrameBody
 {
     // Define the ground body.
@@ -573,38 +672,47 @@ enum {
 - (void)addEarth
 {
     [self addContentFromPODFile: @"earth.pod"];
-
     
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
     [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 30.0, 0.0)];
     [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
+    [self addChild:earth];
     
-    //create earth body
-    b2BodyDef earthBodyDef;
-    earthBodyDef.type = b2_dynamicBody;
-    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-    earthBodyDef.userData = earth;
-    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
-    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
-    
-    
-    // Create circle shape
-    b2CircleShape circle;
-    circle.m_radius = screenSize.width/5/PTM_RATIO;
-    
-    // Create shape definition and add to body
-    b2FixtureDef earthShapeDef;
-    earthShapeDef.shape = &circle;
-    earthShapeDef.density = 0.0f;
-    //    earthShapeDef.friction = 0.2f;
-    earthShapeDef.restitution = 0.35f;
-    earthShapeDef.isSensor = FALSE;
-    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
-    
+   // Create the camera, place it back a bit, and add it to the world
+	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+	cam.location = cc3v( 0.0, 0.0, 3.0 );
+	[earth addChild: cam];
+
+   // Create a light, place it back and to the left at a specific
+	// position (not just directional lighting), and add it to the world
+	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+	lamp.location = cc3v( -2.0, 0.0, 3.0 );
+	lamp.isDirectionalOnly = NO;
+	[earth addChild: lamp];
 
     
+//    //create earth body
+//    b2BodyDef earthBodyDef;
+//    earthBodyDef.type = b2_dynamicBody;
+//    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+//    earthBodyDef.userData = earth;
+//    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
+//    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
+//    
+//    // Create circle shape
+//    b2CircleShape circle;
+//    circle.m_radius = screenSize.width/5/PTM_RATIO;
+//    
+//    // Create shape definition and add to body
+//    b2FixtureDef earthShapeDef;
+//    earthShapeDef.shape = &circle;
+//    earthShapeDef.density = 0.0f;
+//    //    earthShapeDef.friction = 0.2f;
+//    earthShapeDef.restitution = 0.35f;
+//    earthShapeDef.isSensor = FALSE;
+//    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
 }
 
 - (void)drawLine
@@ -626,6 +734,7 @@ enum {
     CC3Box box = CC3BoxFromMinMax(a, b);
     
     CC3BoxNode *cube = [[CC3BoxNode alloc] init];
+    cube.touchEnabled = YES;
     [cube setColor:ccc3(255.0, 0.0, 0.0)];
     [cube populateAsSolidBox:box];
     [cube setLocation:CC3VectorMake(10, y, 10)];
@@ -633,6 +742,7 @@ enum {
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 10.0, 5.0)];
     [cube runAction: [CCRepeatForever actionWithAction: partialRot]];
+    
     
     [self addChild:cube];
     
@@ -656,6 +766,11 @@ enum {
     
 }
 
+- (void)drawMeshNode
+{
+    CC3MeshNode *meshNode = [[CC3MeshNode alloc] initWithName:@"myMeshNode"];
+}
+
 
 #pragma mark Updating custom activity
 
@@ -672,9 +787,9 @@ enum {
 
 //    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
 //    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
-    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
-    _world->SetGravity(gravity);
-//    NSLog(@"update! before");
+    
+//    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
+//    _world->SetGravity(gravity);
 
 }
 
@@ -688,8 +803,7 @@ enum {
  */
 
 -(void) updateAfterTransform: (CC3NodeUpdatingVisitor*) visitor {
-//    NSLog(@"update! after");
-
+    /*
     int32 velocityIterations = 8;
     int32 positionIterations = 3;
     
@@ -742,7 +856,7 @@ enum {
         double bx = b->GetPosition().x;
         double by = b->GetPosition().y;
         double distance = sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
-        NSLog(@"dis: %f", distance);
+//        NSLog(@"dis: %f", distance);
         
         double originLength = 10;
         double fx = ax-bx;
@@ -755,6 +869,7 @@ enum {
     }
     
     previousTime = CACurrentMediaTime();
+     */
 }
 
 
@@ -904,6 +1019,7 @@ enum {
 
 	//Add a new body/atlas sprite at the touched location
 	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
+    [self pickNodeFromTapAt:touchPoint];
 }
 
 /**
@@ -915,7 +1031,10 @@ enum {
  *
  * For more info, read the notes of this method on CC3Scene.
  */
--(void) nodeSelected: (CC3Node*) aNode byTouchEvent: (uint) touchType at: (CGPoint) touchPoint {}
+-(void) nodeSelected: (CC3Node*) aNode byTouchEvent: (uint) touchType at: (CGPoint) touchPoint {
+//    NSLog(@"touch!");
+    NSLog(@"Node Selected: %@", aNode.name);
+}
 
 
 

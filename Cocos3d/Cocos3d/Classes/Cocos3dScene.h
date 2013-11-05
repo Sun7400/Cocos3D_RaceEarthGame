@@ -13,6 +13,7 @@
 
 #import "Box2D.h"
 #import "Cocos3dAppDelegate.h"
+#import "Models.h"
 
 /** Enumeration of camera zoom options. */
 typedef enum {
@@ -57,6 +58,9 @@ typedef enum {
 	CameraZoomType _cameraZoomType;
     LightingType _lightingType;
 	BOOL _isManagingShadows : 1;
+    
+    CC3Camera* _robotCam;
+	CC3Light* _robotLamp;
 
 
 }

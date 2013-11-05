@@ -35,7 +35,7 @@
 -(void) initializeControls {
 	// Set the touchEnabled property to NO to control the scene using iOS gestures,
 	// and to YES to control the scene using lower-level touch events.
-	self.touchEnabled = NO;
+	self.touchEnabled = YES;
     self.mouseEnabled = YES;	// Under OSX, use mouse events since gestures are not supported.
 	
 	[self addJoysticks];
