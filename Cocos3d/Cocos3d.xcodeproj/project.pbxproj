@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C207FE2182C55F8005B1335 /* CoreMotion.framework */; };
 		4C2E6E0018231D3B0072F6F0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6DFF18231D3B0072F6F0 /* QuartzCore.framework */; };
 		4C2E6E0218231D3B0072F6F0 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E0118231D3B0072F6F0 /* OpenGLES.framework */; };
 		4C2E6E0418231D3B0072F6F0 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E0318231D3B0072F6F0 /* OpenAL.framework */; };
@@ -342,6 +343,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4C207FE2182C55F8005B1335 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		4C2E6DFC18231D3B0072F6F0 /* Cocos3d.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cocos3d.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C2E6DFF18231D3B0072F6F0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4C2E6E0118231D3B0072F6F0 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -1009,6 +1011,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */,
 				4C2E6E0418231D3B0072F6F0 /* OpenAL.framework in Frameworks */,
 				4C2E6E0A18231D3B0072F6F0 /* UIKit.framework in Frameworks */,
 				4C2E6E0018231D3B0072F6F0 /* QuartzCore.framework in Frameworks */,
@@ -1045,16 +1048,17 @@
 		4C2E6DFE18231D3B0072F6F0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4C2E6DFF18231D3B0072F6F0 /* QuartzCore.framework */,
-				4C2E6E0118231D3B0072F6F0 /* OpenGLES.framework */,
-				4C2E6E0318231D3B0072F6F0 /* OpenAL.framework */,
 				4C2E6E0518231D3B0072F6F0 /* AudioToolbox.framework */,
 				4C2E6E0718231D3B0072F6F0 /* AVFoundation.framework */,
-				4C2E6E0918231D3B0072F6F0 /* UIKit.framework */,
-				4C2E6E0B18231D3C0072F6F0 /* Foundation.framework */,
 				4C2E6E0D18231D3C0072F6F0 /* CoreGraphics.framework */,
+				4C207FE2182C55F8005B1335 /* CoreMotion.framework */,
 				4C2E6E0F18231D3C0072F6F0 /* CoreText.framework */,
+				4C2E6E0B18231D3C0072F6F0 /* Foundation.framework */,
 				4C2E6E1118231D3C0072F6F0 /* GameKit.framework */,
+				4C2E6E0318231D3B0072F6F0 /* OpenAL.framework */,
+				4C2E6E0118231D3B0072F6F0 /* OpenGLES.framework */,
+				4C2E6DFF18231D3B0072F6F0 /* QuartzCore.framework */,
+				4C2E6E0918231D3B0072F6F0 /* UIKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

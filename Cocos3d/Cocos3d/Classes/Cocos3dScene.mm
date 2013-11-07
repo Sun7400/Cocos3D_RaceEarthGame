@@ -39,6 +39,8 @@ enum {
     float y;
     
     CGSize screenSize;
+    
+    b2Body * earthBody;
 }
 @end
 
@@ -89,7 +91,7 @@ enum {
     // used by this scene, and certain textures.
     
     //Box2D
-//    [self setWorld];
+    [self setWorld];
 //    [self addFrameBody];
 
     /*
@@ -675,6 +677,7 @@ enum {
     
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
     [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
+//    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 30.0, 0.0)];
     [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
@@ -693,26 +696,26 @@ enum {
 	[earth addChild: lamp];
 
     
-//    //create earth body
-//    b2BodyDef earthBodyDef;
-//    earthBodyDef.type = b2_dynamicBody;
-//    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-//    earthBodyDef.userData = earth;
-//    earthBodyDef.linearVelocity = b2Vec2(10.0f, 0.0f);
-//    b2Body * earthBody = _world->CreateBody(&earthBodyDef);
-//    
-//    // Create circle shape
-//    b2CircleShape circle;
-//    circle.m_radius = screenSize.width/5/PTM_RATIO;
-//    
-//    // Create shape definition and add to body
-//    b2FixtureDef earthShapeDef;
-//    earthShapeDef.shape = &circle;
-//    earthShapeDef.density = 0.0f;
-//    //    earthShapeDef.friction = 0.2f;
-//    earthShapeDef.restitution = 0.35f;
-//    earthShapeDef.isSensor = FALSE;
-//    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
+    //create earth body
+    b2BodyDef earthBodyDef;
+    earthBodyDef.type = b2_dynamicBody;
+    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+    earthBodyDef.userData = earth;
+    earthBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
+    earthBody = _world->CreateBody(&earthBodyDef);
+    
+    // Create circle shape
+    b2CircleShape circle;
+    circle.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef earthShapeDef;
+    earthShapeDef.shape = &circle;
+    earthShapeDef.density = 0.0f;
+    //    earthShapeDef.friction = 0.2f;
+    earthShapeDef.restitution = 0.35f;
+    earthShapeDef.isSensor = FALSE;
+    _earthFixture = earthBody->CreateFixture(&earthShapeDef);
 }
 
 - (void)drawLine
@@ -785,11 +788,9 @@ enum {
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
     [self updateCameraFromControls: visitor.deltaTime];
 
-//    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
-//    b2Vec2 gravity = b2Vec2(mainDelegate.wGx,mainDelegate.wGy);
-    
-//    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
-//    _world->SetGravity(gravity);
+    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
+    _world->SetGravity(gravity);
 
 }
 
@@ -803,7 +804,7 @@ enum {
  */
 
 -(void) updateAfterTransform: (CC3NodeUpdatingVisitor*) visitor {
-    /*
+    
     int32 velocityIterations = 8;
     int32 positionIterations = 3;
     
@@ -869,7 +870,6 @@ enum {
     }
     
     previousTime = CACurrentMediaTime();
-     */
 }
 
 
@@ -1020,9 +1020,10 @@ enum {
 	//Add a new body/atlas sprite at the touched location
 	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
     [self pickNodeFromTapAt:touchPoint];
+    
 }
 
-/**
+/*
  * This callback template method is invoked automatically when a node has been picked
  * by the invocation of the pickNodeFromTapAt: or pickNodeFromTouchEvent:at: methods,
  * as a result of a touch event or tap gesture.
@@ -1036,7 +1037,14 @@ enum {
     NSLog(@"Node Selected: %@", aNode.name);
 }
 
+- (void)test : (double)roll andPitch:(double)pitch andYaw:(double)yaw
+{
+    //roll left-right(- +), pitch up-down(- +)
+    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
+    
+    earthBody->ApplyForce(b2Vec2(roll*10, -pitch*10), earthBody->GetLocalCenter());
 
+}
 
 @end
 

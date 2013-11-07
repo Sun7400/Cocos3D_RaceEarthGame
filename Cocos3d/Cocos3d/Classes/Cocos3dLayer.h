@@ -8,6 +8,7 @@
 
 
 #import "CC3Layer.h"
+#import <CoreMotion/CoreMotion.h>
 
 #import "Joystick.h"
 

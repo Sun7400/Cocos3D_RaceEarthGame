@@ -65,6 +65,7 @@ typedef enum {
 
 }
 
+
 /**
  * This property controls the velocity of the change in direction of the 3D camera
  * (a proxy for the player). This property is set by the CC3Layer, from the velocity
@@ -82,5 +83,8 @@ typedef enum {
  * The initial value of this property is CGPointZero.
  */
 @property(nonatomic, assign) CGPoint playerLocationControl;
+
+- (void)test : (double)roll andPitch:(double)pitch andYaw:(double)yaw;
+
 
 @end

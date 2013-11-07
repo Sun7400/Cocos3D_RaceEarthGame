@@ -15,7 +15,17 @@
 #define kJoystickPadding				8.0
 
 
+@interface Cocos3dLayer()
+{
+}
+
+@property (nonatomic, retain) CMMotionManager *motionManager;
+
+@end
+
 @implementation Cocos3dLayer
+
+@synthesize motionManager = _motionManager;
 
 -(void) dealloc {
     [super dealloc];
@@ -25,7 +35,9 @@
  * Returns the contained CC3Scene, cast into the appropriate type.
  * This is a convenience method to perform automatic casting.
  */
--(Cocos3dScene*) cocos3dScene { return (Cocos3dScene*) self.cc3Scene; }
+-(Cocos3dScene*) cocos3dScene {
+    return (Cocos3dScene*) self.cc3Scene;
+}
 
 /**
  * Override to set up your 2D controls and other initial state, and to initialize update processing.
@@ -37,11 +49,18 @@
 	// and to YES to control the scene using lower-level touch events.
 	self.touchEnabled = YES;
     self.mouseEnabled = YES;	// Under OSX, use mouse events since gestures are not supported.
-	
+    
 	[self addJoysticks];
+    
+    //set up gyroscope
+    [self initializeDeviceMotion];
 
 	[self scheduleUpdate];   // Schedule updates on each frame
 }
+
+
+
+
 
 /** Creates the two joysticks that control the 3D camera direction and location. */
 -(void) addJoysticks {
@@ -80,6 +99,8 @@
 	[self addChild: locationJoystick];
 }
 
+
+
 /**
  * Positions the right-side location joystick at the right of the layer.
  * This is called at initialization, and anytime the content size of the layer changes
@@ -116,7 +137,8 @@
  * and then updates the 3D scene.
  */
 -(void) update: (ccTime)dt {
-	
+	[self sampleDeviceMotion];
+    
 	// Update the player direction and position in the scene from the joystick velocities
 	self.cocos3dScene.playerDirectionControl = directionJoystick.velocity;
 	self.cocos3dScene.playerLocationControl = locationJoystick.velocity;
@@ -154,6 +176,91 @@
 - (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     NSLog(@"touch!");
+}
+
+#pragma mark gyroscope motion
+
+-(void) initializeDeviceMotion {
+    _motionManager = [[CMMotionManager alloc] init];
+    _motionManager.deviceMotionUpdateInterval = 1.0/60.0;
+    _motionManager.accelerometerUpdateInterval = .2;
+    _motionManager.gyroUpdateInterval = .2;
+    
+    if (_motionManager.isDeviceMotionAvailable) {
+        [_motionManager startDeviceMotionUpdates];
+    }
+}
+
+
+-(void)outputAccelertionData:(CMAcceleration)acceleration
+{
+    NSLog(@"Acceleration x:%f y:%f z:%f", acceleration.x, acceleration.y, acceleration.z);
+//    self.accX.text = [NSString stringWithFormat:@" %.2fg",acceleration.x];
+//    if(fabs(acceleration.x) > fabs(currentMaxAccelX))
+//    {
+//        currentMaxAccelX = acceleration.x;
+//    }
+//    self.accY.text = [NSString stringWithFormat:@" %.2fg",acceleration.y];
+//    if(fabs(acceleration.y) > fabs(currentMaxAccelY))
+//    {
+//        currentMaxAccelY = acceleration.y;
+//    }
+//    self.accZ.text = [NSString stringWithFormat:@" %.2fg",acceleration.z];
+//    if(fabs(acceleration.z) > fabs(currentMaxAccelZ))
+//    {
+//        currentMaxAccelZ = acceleration.z;
+//    }
+//    
+//    self.maxAccX.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelX];
+//    self.maxAccY.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelY];
+//    self.maxAccZ.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelZ];
+}
+
+-(void)outputRotationData:(CMRotationRate)rotation
+{
+    NSLog(@"Rotation x:%f y:%f z:%f", rotation.x, rotation.y, rotation.z);
+
+//    self.rotX.text = [NSString stringWithFormat:@" %.2fr/s",rotation.x];
+//    if(fabs(rotation.x) > fabs(currentMaxRotX))
+//    {
+//        currentMaxRotX = rotation.x;
+//    }
+//    self.rotY.text = [NSString stringWithFormat:@" %.2fr/s",rotation.y];
+//    if(fabs(rotation.y) > fabs(currentMaxRotY))
+//    {
+//        currentMaxRotY = rotation.y;
+//    }
+//    self.rotZ.text = [NSString stringWithFormat:@" %.2fr/s",rotation.z];
+//    if(fabs(rotation.z) > fabs(currentMaxRotZ))
+//    {
+//        currentMaxRotZ = rotation.z;
+//    }
+//    
+//    self.maxRotX.text = [NSString stringWithFormat:@" %.2f",currentMaxRotX];
+//    self.maxRotY.text = [NSString stringWithFormat:@" %.2f",currentMaxRotY];
+//    self.maxRotZ.text = [NSString stringWithFormat:@" %.2f",currentMaxRotZ];
+}
+
+-(void) sampleDeviceMotion {
+    
+    if (_motionManager.isDeviceMotionActive) {
+        CMDeviceMotion* deviceMotion = _motionManager.deviceMotion;
+        CMAttitude* currAttitude = deviceMotion.attitude;
+        
+    
+//        NSLog(@"Roll:%f Pitch:%f Yaw:%f", currAttitude.roll, currAttitude.pitch, currAttitude.yaw);
+        
+        Cocos3dScene *scene = [self cocos3dScene];
+        [scene test:currAttitude.roll andPitch:currAttitude.pitch andYaw:currAttitude.yaw];
+        
+        //        if ( !referenceAttitude ) self.referenceAttitude = [currAttitude copyAutoreleased];
+        
+//        [currAttitude multiplyByInverseOfAttitude: referenceAttitude];
+//        LogCleanTrace(@"%@", currAttitude);
+        
+//        CC3Vector rotRadians = cc3v(currAttitude.pitch, currAttitude.roll, 0.0f);
+//        self.myScene.cameraRotation = CC3VectorScaleUniform(rotRadians, RadiansToDegreesFactor);
+    }
 }
 
 @end
