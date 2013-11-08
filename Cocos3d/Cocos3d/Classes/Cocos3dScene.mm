@@ -34,6 +34,8 @@ enum {
 	kTagParentNode = 1,
 };
 
+
+
 @interface Cocos3dScene ()
 {
     float y;
@@ -92,7 +94,7 @@ enum {
     
     //Box2D
     [self setWorld];
-//    [self addFrameBody];
+    [self addFrameBody];
 
     /*
      * Draw Backround
@@ -578,6 +580,9 @@ enum {
 																				two: takeABow]]];
 }
 
+
+
+
 - (void)addFrameBody
 {
     // Define the ground body.
@@ -586,28 +591,36 @@ enum {
     
     // The body is also added to the world.
     b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+    groundBody->SetType(b2_staticBody);
     
     // Define the ground box shape.
     b2PolygonShape groundBox;
     
+//    double edge = 400/PTM_RATIO;
+//    
+//    groundBox.SetAsBox(edge, edge);
+//    groundBody->CreateFixture(&groundBox, 1);
+    
+    double tempx = [CCDirector sharedDirector].winSize.width/8;
+    double tempy = [CCDirector sharedDirector].winSize.height/8;
+    
+    NSLog(@"Frame Edge width: %f height: %f", tempx, tempy);
+    
     // bottom
-    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBox.SetAsEdge(b2Vec2(-tempx/2,-tempy/2), b2Vec2(tempx/2,-tempy/2));
     groundBody->CreateFixture(&groundBox,0);
-    
-    // top
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
-    groundBody->CreateFixture(&groundBox,0);
-    
-    // left
-    groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
-    groundBody->CreateFixture(&groundBox,0);
-    
+
     // right
-    groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBox.SetAsEdge(b2Vec2(tempx/2,-tempy/2), b2Vec2(tempx/2,tempy/2));
     groundBody->CreateFixture(&groundBox,0);
-    ///
-    
-    
+
+    // top
+    groundBox.SetAsEdge(b2Vec2(tempx/2,tempy/2), b2Vec2(-tempx/2,tempy/2));
+    groundBody->CreateFixture(&groundBox,0);
+
+    // left
+    groundBox.SetAsEdge(b2Vec2(-tempx/2,tempy), b2Vec2(-tempx/2,-tempy/2));
+    groundBody->CreateFixture(&groundBox,0);
 
 }
 
@@ -676,6 +689,7 @@ enum {
     [self addContentFromPODFile: @"earth.pod"];
     
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+    [earth setLocation:cc3v(0.0, 0.0, 0.0)];
     [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
@@ -699,6 +713,7 @@ enum {
     //create earth body
     b2BodyDef earthBodyDef;
     earthBodyDef.type = b2_dynamicBody;
+//    earthBodyDef.position.Set(0.0, 0.0);
     earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
     earthBodyDef.userData = earth;
     earthBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
@@ -819,6 +834,8 @@ enum {
     //Iterate over the bodies in the physics world
     for (b2Body* b = _world->GetBodyList(); b; b = b->GetNext())
     {
+        NSLog(@"body position x:%f y:%f", b->GetPosition().x, b->GetPosition().y);
+        
         if (b->GetUserData() != NULL) {
             
             CGSize winSz = [[CCDirector sharedDirector] winSizeInPixels];
@@ -848,10 +865,12 @@ enum {
     }
     
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
-
+        NSLog(@"Contact!");
+        
         b2Body *a = contact->GetFixtureA()->GetBody();
         b2Body *b = contact->GetFixtureB()->GetBody();
-
+        
+        //version1 to handle contact
         double ax = a->GetPosition().x;
         double ay = a->GetPosition().y;
         double bx = b->GetPosition().x;
@@ -867,6 +886,17 @@ enum {
             a->ApplyForce(b2Vec2(fx*100, fy*100), a->GetLocalCenter());
             b->ApplyForce(b2Vec2(-fx*100, -fy*100), b->GetLocalCenter());
         }
+
+        //version2 to handle contact - bounce
+//        if (a->GetType() == b2_dynamicBody) {
+//            a->SetLinearVelocity(b2Vec2(-a->GetLinearVelocity().x,-a->GetLinearVelocity().y));
+//
+//        }
+//        if (b->GetType() == b2_dynamicBody) {
+//            b->SetLinearVelocity(b2Vec2(-b->GetLinearVelocity().x,-b->GetLinearVelocity().y));
+//            
+//        }
+
     }
     
     previousTime = CACurrentMediaTime();
@@ -1040,8 +1070,7 @@ enum {
 - (void)test : (double)roll andPitch:(double)pitch andYaw:(double)yaw
 {
     //roll left-right(- +), pitch up-down(- +)
-    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
-    
+//    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
     earthBody->ApplyForce(b2Vec2(roll*10, -pitch*10), earthBody->GetLocalCenter());
 
 }
