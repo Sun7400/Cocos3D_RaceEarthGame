@@ -101,9 +101,9 @@ enum {
      */
     [self addBackdrop];
 
-    
+    [self addTestPOD];
 //    [self addBall];
-    [self addEarth];
+//    [self addEarth];
     
 //	[self addGround];				// Add a ground plane to provide some perspective to the user
 //    [self addRobot];				// Add an animated robot arm, a light, and a camera. This POD file
@@ -252,28 +252,18 @@ enum {
 	// when models are loaded on the background loading thread.
 	CC3ShaderProgram.isPreloading = YES;
     
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3MultiTextureConfigurable.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3SingleTextureAlphaTest.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3SingleTexture.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"BumpMap.vsh"
-//							andFragmentShaderFile: @"BumpMap.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PureColor.vsh"
-//							andFragmentShaderFile: @"CC3PureColor.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3SingleTextureReflect.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3NoTexture.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PointSprites.vsh"
-//							andFragmentShaderFile: @"CC3PointSprites.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3ClipSpaceTexturable.vsh"
-//							andFragmentShaderFile: @"CC3ClipSpaceNoTexture.fsh"];
-//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh"
-//							andFragmentShaderFile: @"CC3BumpMapTangentSpace.fsh"];
+    
+	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
+	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3MultiTextureConfigurable.fsh"];
+	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3SingleTextureAlphaTest.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3SingleTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"BumpMap.vsh" andFragmentShaderFile: @"BumpMap.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PureColor.vsh" andFragmentShaderFile: @"CC3PureColor.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3SingleTextureReflect.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3NoTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3PointSprites.vsh" andFragmentShaderFile: @"CC3PointSprites.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3ClipSpaceTexturable.vsh" andFragmentShaderFile: @"CC3ClipSpaceNoTexture.fsh"];
+//	[CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapTangentSpace.fsh"];
     
 	// Now pre-load shader programs that originate in PFX resources
 	CC3Resource.isPreloading = YES;
@@ -293,12 +283,12 @@ enum {
 	// also requires substantial time for mipmap generation. For such textures, by loading
 	// the texture, creating the mipmap, and caching the texture here, we can avoid the delay.
 	// All other textures are loaded on the background thread.
-	CC3Texture.isPreloading = YES;
-	[CC3Texture textureFromFile: @"Arial32BMGlyph.png"];
+//	CC3Texture.isPreloading = YES;
+//	[CC3Texture textureFromFile: @"Arial32BMGlyph.png"];
 #if !CC3_OGLES_1
-	[CC3Texture textureCubeFromFilePattern: @"EnvMap%@.jpg"];
+//	[CC3Texture textureCubeFromFilePattern: @"EnvMap%@.jpg"];
 #endif	// !CC3_OGLES_1
-	CC3Texture.isPreloading = NO;
+//	CC3Texture.isPreloading = NO;
 }
 
 /** Various options for configuring interesting camera behaviours. */
@@ -686,9 +676,9 @@ enum {
 
 - (void)addEarth
 {
-    [self addContentFromPODFile: @"earth.pod"];
+    [self addContentFromPODFile:@"earth.pod" withName:@"earth"];
     
-    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"Sphere"];
+    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"earth"];
     [earth setLocation:cc3v(0.0, 0.0, 0.0)];
     [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
@@ -733,6 +723,47 @@ enum {
     _earthFixture = earthBody->CreateFixture(&earthShapeDef);
 }
 
+- (void)addTestPOD
+{
+    [self addContentFromPODFile: @"Untitled.pod" withName:@"test"];
+    
+    CC3MeshNode* test = (CC3MeshNode*)[self getNodeNamed: @"test"];
+    test.shaderProgram = [CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
+    [test setLocation:cc3v(0.0, 0.0, 0.0)];
+    [test setRotation:cc3v(-20.0, 0.0, 0.0)];
+    //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
+//    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0 rotateBy: cc3v(5.0, 0.0, 0.0)];
+//    [test runAction: [CCRepeatForever actionWithAction: partialRot]];
+    [self addChild:test];
+
+    
+}
+
+- (void)createBox2dProperty:(CC3MeshNode*)node
+{
+    //create body
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position.Set(2.0, 2.0);
+//    bodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+    bodyDef.userData = node;
+    bodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
+    b2Body *body = _world->CreateBody(&bodyDef);
+    
+//    // Create circle shape
+//    b2CircleShape circle;
+//    circle.m_radius = screenSize.width/5/PTM_RATIO;
+    
+    // Create shape definition and add to body
+    b2FixtureDef fixtureDef;
+//    earthShapeDef.shape = &circle;
+    fixtureDef.density = 0.0f;
+    //    earthShapeDef.friction = 0.2f;
+    fixtureDef.restitution = 0.35f;
+    fixtureDef.isSensor = FALSE;
+    b2Fixture *fixture = body->CreateFixture(&fixtureDef);
+}
+
 - (void)drawLine
 {
     CC3Vector arr_location[] = {0,0,0, 5,5, 5 };
@@ -752,10 +783,15 @@ enum {
     CC3Box box = CC3BoxFromMinMax(a, b);
     
     CC3BoxNode *cube = [[CC3BoxNode alloc] init];
+//    CC3VertexShader *vertexShader = [[CC3VertexShader alloc] initWithName:@"spotlight.vsh"];
+//    CC3FragmentShader *fragmentShader = [[CC3FragmentShader alloc] initWithName:@"spotlight.fsh"];
+//    cube.shaderProgram = [CC3ShaderProgram programWithVertexShader:vertexShader andFragmentShader:fragmentShader];
+    
+    cube.shaderProgram = [CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
     cube.touchEnabled = YES;
     [cube setColor:ccc3(255.0, 0.0, 0.0)];
     [cube populateAsSolidBox:box];
-    [cube setLocation:CC3VectorMake(10, y, 10)];
+    [cube setLocation:CC3VectorMake(0, 0, 0)];
     
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 10.0, 5.0)];
