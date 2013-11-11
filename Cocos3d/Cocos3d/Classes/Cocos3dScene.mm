@@ -17,6 +17,7 @@ extern "C" {
 #import "CC3Camera.h"
 #import "CC3Light.h"
 
+
 #import "CC3ControllableLayer.h"
 
 #import "CC3ShaderProgram.h"
@@ -47,6 +48,7 @@ enum {
     b2Body* testGroundBody;
 }
 
+@property (nonatomic) CC3MeshNode *earth;
 @property (nonatomic) CC3MeshNode *testGround;
 @property (nonatomic) CC3MeshNode *test;
 
@@ -62,6 +64,8 @@ enum {
 @synthesize playerDirectionControl=_playerDirectionControl;
 @synthesize playerLocationControl=_playerLocationControl;
 
+
+@synthesize earth;
 @synthesize testGround;
 @synthesize test;
 @synthesize cameraTarget;
@@ -320,8 +324,9 @@ enum {
     // Create the camera
 //	CC3Camera* cam = self.activeCamera;
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 1.0, 1.0 );
-    cam.target = test;
+	cam.location = cc3v( 0.0, 2.0, 2.0 );
+    cam.target = earth;
+    cam.shouldTrackTarget = YES; //move relative to the target
 	[self addChild: cam];
     [self setActiveCamera:cam];
     
@@ -749,9 +754,9 @@ enum {
 {
     [self addContentFromPODFile:@"earth.pod" withName:@"earth"];
     
-    CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"earth"];
+    earth = (CC3MeshNode*)[self getNodeNamed: @"earth"];
     [earth setLocation:cc3v(0.0, 100.0, 0.0)];
-    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
+//    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 30.0, 0.0)];
@@ -913,7 +918,15 @@ enum {
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
+    
+    [self printLocation];
 
+}
+
+- (void)printLocation
+{
+    NSLog(@"Earth x:%f y:%f z:%f", earth.globalLocation.x, earth.globalLocation.y, earth.globalLocation.z);
+    NSLog(@"EarthBody x:%f y:%f", earthBody->GetLocalCenter().x, earthBody->GetLocalCenter().y);
 }
 
 /**
@@ -974,7 +987,7 @@ enum {
     }
     
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
-        NSLog(@"Contact!");
+//        NSLog(@"Contact!");
         
         b2Body *a = contact->GetFixtureA()->GetBody();
         b2Body *b = contact->GetFixtureB()->GetBody();
@@ -1034,6 +1047,7 @@ enum {
 #define LOCATION_CONTROL_SPEED 5
 #define DIRECTION_CONTROL_SPEED 10
 	// Update the location of the player (the camera)
+    // Right buttom
 	if ( _playerLocationControl.x || _playerLocationControl.y ) {
 //		NSLog(@"Player Location Control");
         
@@ -1049,7 +1063,11 @@ enum {
 		// in turn are set by the joystick, and combined into a single directional vector.
 		// This represents the movement of the camera. The new location is simply the old
 		// camera location plus the movement.
-		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
+        // globalRightDirection - x, globalForwardDirection - y, globalUpDirection - z
+        
+		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalUpDirection, delta.y));
+        
+        
 		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
         
         //move earth
@@ -1240,11 +1258,19 @@ enum {
     //roll left-right(- +), pitch up-down(- +)
     //roll in x-direction, pitch in z-direction
 //    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
-//    NSLog(@"z: %f", z);
+    NSLog(@"z: %f", z);
     
     z += pitch/10;
     earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
 
+//    [self moveCameraAlongZ];
+}
+
+- (void)moveCameraAlongZ
+{
+    CC3Camera* activeCam = self.activeCamera;
+    CC3Vector moveVector = cc3v(0, 0, earth.globalLocation.z/100);
+    activeCam.location = CC3VectorAdd(activeCam.location, moveVector);
 }
 
 @end

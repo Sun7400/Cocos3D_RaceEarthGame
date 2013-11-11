@@ -10,7 +10,6 @@
 #import "CC3Scene.h"
 #import "CC3UtilityMeshNodes.h"
 
-
 #import "Box2D.h"
 #import "Cocos3dAppDelegate.h"
 #import "Models.h"
