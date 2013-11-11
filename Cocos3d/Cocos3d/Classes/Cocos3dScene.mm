@@ -666,21 +666,22 @@ enum {
     
     NSLog(@"Frame Edge width: %f height: %f", tempx, tempy);
     
+    
     // bottom
-    groundBox.SetAsEdge(b2Vec2(-tempx/2,-tempy/2), b2Vec2(tempx/2,-tempy/2));
+    groundBox.SetAsEdge(b2Vec2(-tempx/2,0), b2Vec2(tempx/2,0));
     groundBody->CreateFixture(&groundBox,0);
 
     // right
-    groundBox.SetAsEdge(b2Vec2(tempx/2,-tempy/2), b2Vec2(tempx/2,tempy/2));
-    groundBody->CreateFixture(&groundBox,0);
-
-    // top
-    groundBox.SetAsEdge(b2Vec2(tempx/2,tempy/2), b2Vec2(-tempx/2,tempy/2));
-    groundBody->CreateFixture(&groundBox,0);
-
-    // left
-    groundBox.SetAsEdge(b2Vec2(-tempx/2,tempy), b2Vec2(-tempx/2,-tempy/2));
-    groundBody->CreateFixture(&groundBox,0);
+//    groundBox.SetAsEdge(b2Vec2(tempx/2,0), b2Vec2(tempx/2,tempy/2));
+//    groundBody->CreateFixture(&groundBox,0);
+//
+//    // top
+//    groundBox.SetAsEdge(b2Vec2(tempx/2,tempy/2), b2Vec2(-tempx/2,tempy/2));
+//    groundBody->CreateFixture(&groundBox,0);
+//
+//    // left
+//    groundBox.SetAsEdge(b2Vec2(-tempx/2,tempy), b2Vec2(-tempx/2,0));
+//    groundBody->CreateFixture(&groundBox,0);
 
 }
 
@@ -749,7 +750,7 @@ enum {
     [self addContentFromPODFile:@"earth.pod" withName:@"earth"];
     
     CC3MeshNode* earth = (CC3MeshNode*)[self getNodeNamed: @"earth"];
-    [earth setLocation:cc3v(0.0, 0.0, 0.0)];
+    [earth setLocation:cc3v(0.0, 100.0, 0.0)];
     [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
@@ -773,21 +774,21 @@ enum {
     //create earth body
     b2BodyDef earthBodyDef;
     earthBodyDef.type = b2_dynamicBody;
-//    earthBodyDef.position.Set(0.0, 0.0);
-    earthBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+//    earthBodyDef.position.Set(0.0, 10.0);
+    earthBodyDef.position.Set(0, 100);
     earthBodyDef.userData = earth;
     earthBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
     earthBody = _world->CreateBody(&earthBodyDef);
     
     // Create circle shape
     b2CircleShape circle;
-    circle.m_radius = screenSize.width/5/PTM_RATIO;
+    circle.m_radius = 15; //not sure what the earth raidus is
     
     // Create shape definition and add to body
     b2FixtureDef earthShapeDef;
     earthShapeDef.shape = &circle;
     earthShapeDef.density = 0.0f;
-    //    earthShapeDef.friction = 0.2f;
+    earthShapeDef.friction = 0.2f;
     earthShapeDef.restitution = 0.35f;
     earthShapeDef.isSensor = FALSE;
     _earthFixture = earthBody->CreateFixture(&earthShapeDef);
@@ -910,7 +911,7 @@ enum {
     [self updateCameraFromControls: visitor.deltaTime];
 
     Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
-    b2Vec2 gravity = b2Vec2(0.0f, 0.0f);
+    b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
 
 }
@@ -936,6 +937,7 @@ enum {
     }
     
     _world->Step(deltaTime, velocityIterations, positionIterations);
+
     
     //Iterate over the bodies in the physics world
     for (b2Body* b = _world->GetBodyList(); b; b = b->GetNext())
@@ -977,36 +979,51 @@ enum {
         b2Body *a = contact->GetFixtureA()->GetBody();
         b2Body *b = contact->GetFixtureB()->GetBody();
         
-        //version1 to handle contact
-        double ax = a->GetPosition().x;
-        double ay = a->GetPosition().y;
-        double bx = b->GetPosition().x;
-        double by = b->GetPosition().y;
-        double distance = sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
-//        NSLog(@"dis: %f", distance);
-        
-        double originLength = 10;
-        double fx = ax-bx;
-        double fy = bx-by;
-        
-        if (distance < originLength) {
-            a->ApplyForce(b2Vec2(fx*100, fy*100), a->GetLocalCenter());
-            b->ApplyForce(b2Vec2(-fx*100, -fy*100), b->GetLocalCenter());
-        }
-
-        //version2 to handle contact - bounce
-//        if (a->GetType() == b2_dynamicBody) {
-//            a->SetLinearVelocity(b2Vec2(-a->GetLinearVelocity().x,-a->GetLinearVelocity().y));
-//
-//        }
-//        if (b->GetType() == b2_dynamicBody) {
-//            b->SetLinearVelocity(b2Vec2(-b->GetLinearVelocity().x,-b->GetLinearVelocity().y));
-//            
-//        }
-
+//        [self handleContactByReverseForce:a andB:b];
+//        [self handleContactByReverseVelocity:a andB:b];
     }
     
     previousTime = CACurrentMediaTime();
+}
+
+- (void)handleContactByReverseForce:(b2Body*)a andB:(b2Body*)b
+{
+    double ax = a->GetPosition().x;
+    double ay = a->GetPosition().y;
+    double bx = b->GetPosition().x;
+    double by = b->GetPosition().y;
+    double distance = sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));
+    //        NSLog(@"dis: %f", distance);
+    
+    double originLength = 10;
+    double fx = ax-bx;
+    double fy = bx-by;
+    
+    if (distance < originLength) {
+        a->ApplyForce(b2Vec2(fx*10, fy*10), a->GetLocalCenter());
+        b->ApplyForce(b2Vec2(-fx*10, -fy*10), b->GetLocalCenter());
+    }
+}
+
+- (void)handleContactByReverseVelocity:(b2Body*)a andB:(b2Body*)b
+{
+    double damperFactor = -0.6;
+    
+    if (a->GetType() == b2_dynamicBody) {
+        double vx = a->GetLinearVelocity().x;
+        double vy = a->GetLinearVelocity().y;
+        
+        a->SetLinearVelocity(b2Vec2(damperFactor*vx, damperFactor*vy));
+        
+    }
+    if (b->GetType() == b2_dynamicBody) {
+        double vx = b->GetLinearVelocity().x;
+        double vy = b->GetLinearVelocity().y;
+        
+        b->SetLinearVelocity(b2Vec2(damperFactor*vx, damperFactor*vy));
+        
+    }
+
 }
 
 
@@ -1033,17 +1050,19 @@ enum {
 		// This represents the movement of the camera. The new location is simply the old
 		// camera location plus the movement.
 		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
-//		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
+		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
         
         //move earth
-        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
-        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(delta.x, delta.y, 0.1), CC3VectorMake(10.0, 10.0, 10.0)));
-	}else{
+//        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
+//        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(delta.x, delta.y, 0.1), CC3VectorMake(10.0, 10.0, 10.0)));
+	}
     
-    double zspeed = 1;
-    CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
-    earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(0, zspeed, 0), CC3VectorMake(10.0, 10.0, 10.0)));
-    }
+//    else{
+//        
+//        double zspeed = 1;
+//        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
+//        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(0, zspeed, 0), CC3VectorMake(10.0, 10.0, 10.0)));
+//    }
     
 	// Update the direction the camera is pointing by panning and inclining using rotation.
 	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
@@ -1194,6 +1213,10 @@ enum {
 
 	//Add a new body/atlas sprite at the touched location
 	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
+    
+    //touch to make racecar jump in +y direction
+    earthBody->ApplyForce(b2Vec2(0, 200), earthBody->GetLocalCenter());
+    
     [self pickNodeFromTapAt:touchPoint];
     
 }
@@ -1216,8 +1239,8 @@ enum {
 {
     //roll left-right(- +), pitch up-down(- +)
     //roll in x-direction, pitch in z-direction
-    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
-    NSLog(@"z: %f", z);
+//    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
+//    NSLog(@"z: %f", z);
     
     z += pitch/10;
     earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
