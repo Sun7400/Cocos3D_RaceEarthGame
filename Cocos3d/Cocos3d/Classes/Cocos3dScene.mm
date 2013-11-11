@@ -116,7 +116,7 @@ enum {
     
     //Box2D
     [self setWorld];
-    [self addFrameBody];
+    [self addFrameBody]; //constrain the racecar movement
 
     /*
      * Draw Backround & Ground
@@ -184,7 +184,15 @@ enum {
    
 
 
+//    [self  setCam];
+}
 
+- (void) setCam
+{
+    CC3Camera *cam = self.activeCamera;
+    CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, 0.001),CC3VectorScaleUniform(cam.globalForwardDirection, 0.5));
+    
+    cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
 }
 
 /**
@@ -324,7 +332,7 @@ enum {
     // Create the camera
 //	CC3Camera* cam = self.activeCamera;
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 2.0, 2.0 );
+	cam.location = cc3v( 0.0, 0.5, 0.5 );
     cam.target = earth;
     cam.shouldTrackTarget = YES; //move relative to the target
 	[self addChild: cam];
@@ -558,10 +566,13 @@ enum {
 
 - (void)addGroundTest
 {
+    double width = 20;
+    double length = 100;
     testGround = [[CC3PlaneNode alloc] init];
-    [testGround populateAsRectangleWithSize:CGSizeMake(20.0, 20.0) andRelativeOrigin:CGPointMake(1.0, 0.5)];
+    testGround.color = ccBLUE;
+    [testGround populateAsRectangleWithSize:CGSizeMake(width, length) andRelativeOrigin:CGPointMake(0.0, 0.0)];
     
-    testGround.location = cc3v(1.0, -5.0, 0.0);
+    testGround.location = cc3v(-width, 0.0, -length/2);
     testGround.rotation = cc3v(90.0, 0.0, 0.0);
     testGround.shouldCullBackFaces = NO;
     
@@ -666,27 +677,29 @@ enum {
 //    groundBox.SetAsBox(edge, edge);
 //    groundBody->CreateFixture(&groundBox, 1);
     
-    double tempx = [CCDirector sharedDirector].winSize.width/8;
-    double tempy = [CCDirector sharedDirector].winSize.height/8;
+//    double tempx = [CCDirector sharedDirector].winSize.width/8;
+//    double tempy = [CCDirector sharedDirector].winSize.height/8;
+    double tempx = 8; // should look at ground width
+    double tempy = 5;
     
     NSLog(@"Frame Edge width: %f height: %f", tempx, tempy);
     
     
     // bottom
-    groundBox.SetAsEdge(b2Vec2(-tempx/2,0), b2Vec2(tempx/2,0));
+    groundBox.SetAsEdge(b2Vec2(-tempx,0), b2Vec2(tempx,0));
     groundBody->CreateFixture(&groundBox,0);
 
     // right
-//    groundBox.SetAsEdge(b2Vec2(tempx/2,0), b2Vec2(tempx/2,tempy/2));
-//    groundBody->CreateFixture(&groundBox,0);
-//
-//    // top
-//    groundBox.SetAsEdge(b2Vec2(tempx/2,tempy/2), b2Vec2(-tempx/2,tempy/2));
-//    groundBody->CreateFixture(&groundBox,0);
-//
-//    // left
-//    groundBox.SetAsEdge(b2Vec2(-tempx/2,tempy), b2Vec2(-tempx/2,0));
-//    groundBody->CreateFixture(&groundBox,0);
+    groundBox.SetAsEdge(b2Vec2(tempx,0), b2Vec2(tempx,tempy));
+    groundBody->CreateFixture(&groundBox,0);
+
+    // top
+    groundBox.SetAsEdge(b2Vec2(tempx,tempy), b2Vec2(-tempx,tempy));
+    groundBody->CreateFixture(&groundBox,0);
+
+    // left
+    groundBox.SetAsEdge(b2Vec2(-tempx,tempy), b2Vec2(-tempx,0));
+    groundBody->CreateFixture(&groundBox,0);
 
 }
 
@@ -752,10 +765,14 @@ enum {
 
 - (void)addEarth
 {
+    double initX = 0.0;
+    double initY = 80.0;
+    double initZ = 0.0;
+    
     [self addContentFromPODFile:@"earth.pod" withName:@"earth"];
     
     earth = (CC3MeshNode*)[self getNodeNamed: @"earth"];
-    [earth setLocation:cc3v(0.0, 100.0, 0.0)];
+    [earth setLocation:cc3v(initX, initY, initZ)];
 //    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
@@ -779,8 +796,7 @@ enum {
     //create earth body
     b2BodyDef earthBodyDef;
     earthBodyDef.type = b2_dynamicBody;
-//    earthBodyDef.position.Set(0.0, 10.0);
-    earthBodyDef.position.Set(0, 100);
+    earthBodyDef.position.Set(initX, initY);
     earthBodyDef.userData = earth;
     earthBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
     earthBody = _world->CreateBody(&earthBodyDef);
@@ -919,14 +935,14 @@ enum {
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
     
-    [self printLocation];
+//    [self printLocation];
 
 }
 
 - (void)printLocation
 {
     NSLog(@"Earth x:%f y:%f z:%f", earth.globalLocation.x, earth.globalLocation.y, earth.globalLocation.z);
-    NSLog(@"EarthBody x:%f y:%f", earthBody->GetLocalCenter().x, earthBody->GetLocalCenter().y);
+    NSLog(@"EarthBody x:%f y:%f", earthBody->GetPosition().x, earthBody->GetPosition().y);
 }
 
 /**
@@ -986,15 +1002,15 @@ enum {
         }
     }
     
-    for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
+//    for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
 //        NSLog(@"Contact!");
         
-        b2Body *a = contact->GetFixtureA()->GetBody();
-        b2Body *b = contact->GetFixtureB()->GetBody();
+//        b2Body *a = contact->GetFixtureA()->GetBody();
+//        b2Body *b = contact->GetFixtureB()->GetBody();
         
 //        [self handleContactByReverseForce:a andB:b];
 //        [self handleContactByReverseVelocity:a andB:b];
-    }
+//    }
     
     previousTime = CACurrentMediaTime();
 }
@@ -1039,6 +1055,7 @@ enum {
 
 }
 
+#pragma mark camera
 
 /** Update the location and direction of looking of the 3D camera */
 -(void) updateCameraFromControls: (ccTime) dt {
@@ -1065,22 +1082,11 @@ enum {
 		// camera location plus the movement.
         // globalRightDirection - x, globalForwardDirection - y, globalUpDirection - z
         
-		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalUpDirection, delta.y));
+		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
         
         
 		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
-        
-        //move earth
-//        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
-//        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(delta.x, delta.y, 0.1), CC3VectorMake(10.0, 10.0, 10.0)));
 	}
-    
-//    else{
-//        
-//        double zspeed = 1;
-//        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
-//        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(0, zspeed, 0), CC3VectorMake(10.0, 10.0, 10.0)));
-//    }
     
 	// Update the direction the camera is pointing by panning and inclining using rotation.
 	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
@@ -1098,7 +1104,7 @@ enum {
 	}
 }
 
-#pragma mark camera
+
 /**
  * When the user hits the switch-camera-target button, cycle through a series of four
  * different camera targets. The actual movement of the camera to home in on a new target
