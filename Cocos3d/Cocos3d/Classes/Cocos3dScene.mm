@@ -39,6 +39,7 @@ enum {
 @interface Cocos3dScene ()
 {
     float y;
+    float z;
     
     CGSize screenSize;
     
@@ -97,6 +98,8 @@ enum {
 #define kNoFadeIn						0.0f
 
 -(void) initializeScene {
+    z = 0.0;
+    
     screenSize = [CCDirector sharedDirector].winSize;
     previousTime = nil;
 
@@ -956,14 +959,15 @@ enum {
             // Get the distance from the camera to the projection plane
             GLfloat zCam = self.activeCamera.globalLocation.z;
             
-            // Calc the X & Y coordinates on the Z = 0 plane using trig and similar triangles
+            // Calc the X & Y coordinates on the Z = z plane using trig and similar triangles
+            // Change location for cocos3d according to box2d
             CC3Vector tp3D = cc3v(tanHalfFOV * xtp * aspect * zCam,
                                   tanHalfFOV * ytp * zCam,
-                                  0.0f);
+                                  z);
             
             //Synchronize the mesh position with the corresponding body
             CC3MeshNode *myActor = (CC3MeshNode*)b->GetUserData();
-            myActor.location = cc3v(tp3D.x,tp3D.y,0);
+            myActor.location = cc3v(tp3D.x,tp3D.y,tp3D.z);
         }
     }
     
@@ -1208,11 +1212,15 @@ enum {
     NSLog(@"Node Selected: %@", aNode.name);
 }
 
-- (void)test : (double)roll andPitch:(double)pitch andYaw:(double)yaw
+- (void)gyroscope : (double)roll andPitch:(double)pitch andYaw:(double)yaw
 {
     //roll left-right(- +), pitch up-down(- +)
-//    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
-    earthBody->ApplyForce(b2Vec2(roll*10, -pitch*10), earthBody->GetLocalCenter());
+    //roll in x-direction, pitch in z-direction
+    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
+    NSLog(@"z: %f", z);
+    
+    z += pitch/10;
+    earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
 
 }
 

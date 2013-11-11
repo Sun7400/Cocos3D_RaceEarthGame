@@ -84,7 +84,9 @@ typedef enum {
  */
 @property(nonatomic, assign) CGPoint playerLocationControl;
 
-- (void)test : (double)roll andPitch:(double)pitch andYaw:(double)yaw;
+
+
+- (void)gyroscope : (double)roll andPitch:(double)pitch andYaw:(double)yaw;
 
 
 @end

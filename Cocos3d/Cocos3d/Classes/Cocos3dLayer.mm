@@ -333,7 +333,7 @@
 //        NSLog(@"Roll:%f Pitch:%f Yaw:%f", currAttitude.roll, currAttitude.pitch, currAttitude.yaw);
         
         Cocos3dScene *scene = [self cocos3dScene];
-        [scene test:currAttitude.roll andPitch:currAttitude.pitch andYaw:currAttitude.yaw];
+        [scene gyroscope:currAttitude.roll andPitch:currAttitude.pitch andYaw:currAttitude.yaw];
         
         //        if ( !referenceAttitude ) self.referenceAttitude = [currAttitude copyAutoreleased];
         
