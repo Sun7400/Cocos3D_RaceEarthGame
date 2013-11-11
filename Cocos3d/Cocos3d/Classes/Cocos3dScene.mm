@@ -42,11 +42,14 @@ enum {
     
     CGSize screenSize;
     
-    b2Body * earthBody;
+    b2Body* earthBody;
+    b2Body* testGroundBody;
 }
 
 @property (nonatomic) CC3MeshNode *testGround;
 @property (nonatomic) CC3MeshNode *test;
+
+
 
 @property (nonatomic) CC3Node* cameraTarget;
 
@@ -560,7 +563,35 @@ enum {
 //    cam.location = cc3v( 0.5, 1.0, 3.0 );
 //    [testGround addChild: cam];
     
+    /*
+    //create earth body
+    b2BodyDef groundBodyDef;
+    groundBodyDef.type = b2_dynamicBody;
+    //    earthBodyDef.position.Set(0.0, 0.0);
+    groundBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
+    groundBodyDef.userData = testGround;
+    groundBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
+    testGroundBody = _world->CreateBody(&groundBodyDef);
     
+    // Create plane shape
+    b2Vec2 vertices[4];
+    vertices[0].Set(0.0f, 0.0f);
+    vertices[1].Set(20.0f, 0.0f);
+    vertices[2].Set(2.0f, 20.0f);
+    vertices[3].Set(0.0f, 20.0f);
+    int32 count = 4;
+    b2PolygonShape polygon;
+    polygon.Set(vertices, count);
+    
+    
+    // Create shape definition and add to body
+    b2FixtureDef groundShapeDef;
+    groundShapeDef.shape = &polygon;
+    groundShapeDef.density = 0.0f;
+    groundShapeDef.restitution = 0.35f;
+    groundShapeDef.isSensor = FALSE;
+    b2Fixture *groundFixture = testGroundBody->CreateFixture(&groundShapeDef);
+     */
 }
 
 
@@ -983,9 +1014,11 @@ enum {
 #define DIRECTION_CONTROL_SPEED 10
 	// Update the location of the player (the camera)
 	if ( _playerLocationControl.x || _playerLocationControl.y ) {
-		
+//		NSLog(@"Player Location Control");
+        
 		// Get the X-Y delta value of the control and scale it to something suitable
 		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
+        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
         
 		// We want to move the camera forward and backward, and side-to-side,
 		// from the camera's (the user's) point of view.
@@ -995,18 +1028,32 @@ enum {
 		// in turn are set by the joystick, and combined into a single directional vector.
 		// This represents the movement of the camera. The new location is simply the old
 		// camera location plus the movement.
-		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),
-											CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
-		cam.location = CC3VectorAdd(cam.location, moveVector);
-	}
+		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
+//		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
+        
+        //move earth
+        CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
+        earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(delta.x, delta.y, 0.1), CC3VectorMake(10.0, 10.0, 10.0)));
+	}else{
+    
+    double zspeed = 1;
+    CC3MeshNode* earth = (CC3MeshNode*)earthBody->GetUserData();
+    earth.location = CC3VectorAdd(earth.location, CC3VectorScale(CC3VectorMake(0, zspeed, 0), CC3VectorMake(10.0, 10.0, 10.0)));
+    }
     
 	// Update the direction the camera is pointing by panning and inclining using rotation.
 	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
+        NSLog(@"Player Direction Control");
+        
 		CGPoint delta = ccpMult(_playerDirectionControl, dt * DIRECTION_CONTROL_SPEED);		// Factor to set speed of rotation.
+        
+        //Camera rotation
 		CC3Vector camRot = cam.rotation;
 		camRot.y -= delta.x;
 		camRot.x += delta.y;
 		cam.rotation = camRot;
+        
+        
 	}
 }
 
