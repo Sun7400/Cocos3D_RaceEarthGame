@@ -9,6 +9,9 @@
 #import "Cocos3dLayer.h"
 #import "Cocos3dScene.h"
 
+#import "CCNodeAdornments.h"
+
+
 /** Parameters for setting up the joystick and button controls */
 #define kJoystickThumbFileName			@"JoystickThumb.png"
 #define kJoystickSideLength				80.0
@@ -17,6 +20,11 @@
 
 @interface Cocos3dLayer()
 {
+    AdornableMenuItemImage* switchViewMI;
+    AdornableMenuItemImage* shadowMI;
+	AdornableMenuItemImage* zoomMI;
+	AdornableMenuItemImage* invasionMI;
+	AdornableMenuItemImage* sunlightMI;
 }
 
 @property (nonatomic, retain) CMMotionManager *motionManager;
@@ -51,6 +59,7 @@
     self.mouseEnabled = YES;	// Under OSX, use mouse events since gestures are not supported.
     
 	[self addJoysticks];
+    [self addSwitchViewButton];
     
     //set up gyroscope
     [self initializeDeviceMotion];
@@ -128,6 +137,79 @@
     mainDelegate.wGx = 20.0f*accelX;
     mainDelegate.wGy = 20.0f*accelY;
     
+}
+
+/**
+ * Creates a button (actually a single-item menu) in the bottom center of the layer that will
+ * allow the user to switch between four different views of the 3D scene.
+ */
+-(void) addSwitchViewButton {
+#define kSwitchViewButtonFileName		@"ArrowLeftButton48x48.png"
+#define kButtonRingFileName				@"ButtonRing48x48.png"
+
+	// Set up the menu item and position it in the bottom center of the layer
+	switchViewMI = [AdornableMenuItemImage itemWithNormalImage: kSwitchViewButtonFileName
+												 selectedImage: kSwitchViewButtonFileName
+														target: self
+													  selector: @selector(switchViewSelected:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu item uses an
+	// adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+	
+	// The adornment is a ring that fades in around the menu item and then fades out when
+	// the menu item is no longer selected.
+	CCSprite* ringSprite = [CCSprite spriteWithFile: kButtonRingFileName];
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: ringSprite];
+	adornment.zOrder = kAdornmentUnderZOrder;
+	
+	// The adornment could also be a "shine" image that is faded in on-top of the
+	// menu item when it is selected, similar to some UIKit toolbar button implementations.
+	// To try a "shine" adornment instead, uncomment the following.
+    //	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonShineFileName];
+    //	shineSprite.color = ccYELLOW;
+    //	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+    //	 													    peakOpacity: kPeakShineOpacity];
+	
+	// Or the menu item adornment could be one that scales the menu item when activated.
+	// To try a scaler adornment, uncomment the following line.
+    //	adornment = [CCNodeAdornmentScaler adornmentToScaleUniformlyBy: kButtonAdornmentScale];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(switchViewMI.contentSize), switchViewMI.anchorPoint);
+	switchViewMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: switchViewMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
+/** The user has pressed the switch camera view button. Tell the 3D scene so it can move the camera. */
+-(void) switchViewSelected: (CCMenuItemToggle*) svMI {
+	[self.cc3Scene switchCameraTarget];
+}
+
+
+
+/**
+ * Positions the buttons between the two joysticks.
+ * This is called at initialization, and anytime the content size of the layer changes
+ * to keep the button in the correct location within the new layer dimensions.
+ */
+-(void) positionButtons {
+#define kButtonGrid						40.0
+    
+	GLfloat middle = self.contentSize.width / 2.0;
+	GLfloat btnY = (kJoystickPadding * 0.5) + (kButtonGrid * 0.5);
+    
+	shadowMI.position = ccp(middle - (kButtonGrid * 0.5), btnY);
+	zoomMI.position = ccp(middle + (kButtonGrid * 0.5), btnY);
+    
+	btnY += kButtonGrid;
+	switchViewMI.position = ccp(middle - (kButtonGrid * 1.0), btnY);
+	invasionMI.position = ccp(middle, btnY);
+	sunlightMI.position = ccp(middle + (kButtonGrid * 1.0), btnY);
 }
 
 #pragma mark Updating layer

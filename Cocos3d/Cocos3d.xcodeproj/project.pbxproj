@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C04A50D18308B83008C4930 /* ArrowLeftButton48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */; };
+		4C04A50E18308B83008C4930 /* ArrowUpButton48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */; };
+		4C04A50F18308B83008C4930 /* ButtonRing48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50C18308B83008C4930 /* ButtonRing48x48.png */; };
 		4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C207FE2182C55F8005B1335 /* CoreMotion.framework */; };
 		4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C207FE4182D41FF005B1335 /* Untitled.pod */; };
 		4C207FEF182D59F5005B1335 /* spotlight.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 4C207FED182D59F5005B1335 /* spotlight.fsh */; };
@@ -368,6 +371,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowLeftButton48x48.png; sourceTree = "<group>"; };
+		4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowUpButton48x48.png; sourceTree = "<group>"; };
+		4C04A50C18308B83008C4930 /* ButtonRing48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ButtonRing48x48.png; sourceTree = "<group>"; };
 		4C207FE2182C55F8005B1335 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		4C207FE4182D41FF005B1335 /* Untitled.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Untitled.pod; sourceTree = "<group>"; };
 		4C207FED182D59F5005B1335 /* spotlight.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = spotlight.fsh; sourceTree = "<group>"; };
@@ -2029,6 +2035,9 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */,
+				4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */,
+				4C04A50C18308B83008C4930 /* ButtonRing48x48.png */,
 				4C2E77E118286B2B0072F6F0 /* IntroducingPOD_float.pod */,
 				4C2E77231823EFE30072F6F0 /* Balls.pod */,
 				4C2E773A18242DA30072F6F0 /* blocks.png */,
@@ -2323,6 +2332,7 @@
 				4C2E715318231D420072F6F0 /* Icon-40.png in Resources */,
 				4C2E714318231D420072F6F0 /* CC3SingleTextureAlphaTest.fsh in Resources */,
 				4C2E773B18242DA30072F6F0 /* blocks.png in Resources */,
+				4C04A50D18308B83008C4930 /* ArrowLeftButton48x48.png in Resources */,
 				4C2E712D18231D410072F6F0 /* CC3MultiTextureConfigurable.fsh in Resources */,
 				4C2E77751826DD610072F6F0 /* Grass.jpg in Resources */,
 				4C2E77E218286B2B0072F6F0 /* IntroducingPOD_float.pod in Resources */,
@@ -2332,6 +2342,7 @@
 				4C2E716718231D420072F6F0 /* Icon-76.png in Resources */,
 				4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */,
 				4C2E713D18231D410072F6F0 /* CC3PureColor.fsh in Resources */,
+				4C04A50E18308B83008C4930 /* ArrowUpButton48x48.png in Resources */,
 				4C2E712F18231D410072F6F0 /* CC3NoTexture.fsh in Resources */,
 				4C2E714918231D420072F6F0 /* CC3Texturable.vsh in Resources */,
 				4C2E714118231D420072F6F0 /* CC3SingleTexture.fsh in Resources */,
@@ -2342,6 +2353,7 @@
 				4C2E713318231D410072F6F0 /* CC3NoTextureReflect.fsh in Resources */,
 				4C2E715518231D420072F6F0 /* Icon-40@2x.png in Resources */,
 				4C2E77731826D0480072F6F0 /* JoystickThumb.png in Resources */,
+				4C04A50F18308B83008C4930 /* ButtonRing48x48.png in Resources */,
 				4C2E713B18231D410072F6F0 /* CC3PointSpritesAlphaTest.fsh in Resources */,
 				4C2E716118231D420072F6F0 /* Icon-60@2x.png in Resources */,
 				4C2E718118231D420072F6F0 /* hello-world.pod in Resources */,

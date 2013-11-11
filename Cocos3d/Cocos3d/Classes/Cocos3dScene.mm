@@ -44,12 +44,24 @@ enum {
     
     b2Body * earthBody;
 }
+
+@property (nonatomic) CC3MeshNode *testGround;
+@property (nonatomic) CC3MeshNode *test;
+
+@property (nonatomic) CC3Node* cameraTarget;
+
+
 @end
 
 @implementation Cocos3dScene
 
 @synthesize playerDirectionControl=_playerDirectionControl;
 @synthesize playerLocationControl=_playerLocationControl;
+
+@synthesize testGround;
+@synthesize test;
+@synthesize cameraTarget;
+
 
 -(void) dealloc {
 	[super dealloc];
@@ -97,13 +109,19 @@ enum {
     [self addFrameBody];
 
     /*
-     * Draw Backround
+     * Draw Backround & Ground
      */
     [self addBackdrop];
+    [self addGroundTest];
 
-    [self addTestPOD];
+    
+    /*
+     * Add objects
+     */
+    
+//    [self addTestPOD];
 //    [self addBall];
-//    [self addEarth];
+    [self addEarth];
     
 //	[self addGround];				// Add a ground plane to provide some perspective to the user
 //    [self addRobot];				// Add an animated robot arm, a light, and a camera. This POD file
@@ -293,15 +311,13 @@ enum {
 
 /** Various options for configuring interesting camera behaviours. */
 -(void) configureCamera {
-	CC3Camera* cam = self.activeCamera;
-    
-//    // Create the camera, place it back a bit, and add it to the world
-//	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-//	cam.location = cc3v( 0.0, 0.0, 3.0 );
-//	[self addChild: cam];
-//
-
-    
+    // Create the camera
+//	CC3Camera* cam = self.activeCamera;
+	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+	cam.location = cc3v( 0.0, 1.0, 1.0 );
+    cam.target = test;
+	[self addChild: cam];
+    [self setActiveCamera:cam];
     
 	// Camera starts out embedded in the scene.
 	_cameraZoomType = kCameraZoomNone;
@@ -319,13 +335,13 @@ enum {
 	// in the periphery of your view appear elongated, you can adjust the fieldOfView and/or
 	// uniformScale properties to reduce this "fish-eye" effect. See the notes of the CC3Camera
 	// fieldOfView property for more on this.
-	cam.uniformScale = 0.9;
+	cam.uniformScale = 1.0;
 	
 	// You can configure the camera to use orthographic projection instead of the default
 	// perspective projection by setting the isUsingParallelProjection property to YES.
 	// You will also need to adjust the scale to match the different projection.
-    //	cam.isUsingParallelProjection = YES;
-    //	cam.uniformScale = 0.015;
+//    cam.isUsingParallelProjection = YES;
+//    cam.uniformScale = 0.015;
 	
 	// To see the effect of mounting a camera on a moving object, uncomment the following
 	// lines to mount the camera on a virtual boom attached to the beach ball.
@@ -334,6 +350,7 @@ enum {
     //	[beachBall addChild: cam];				// Mount the camera on the beach ball
     //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
     //	cam.rotation = cc3v(0.0, 90.0, 0.0);	// Point camera out over the beach ball
+    
     
 	// To see the effect of mounting a camera on a moving object AND having the camera track a
 	// location or object, even as the moving object bounces and rotates, uncomment the following
@@ -527,6 +544,25 @@ enum {
     // when dropping objects on the ground.
 	[self addChild: _ground];
 }
+
+- (void)addGroundTest
+{
+    testGround = [[CC3PlaneNode alloc] init];
+    [testGround populateAsRectangleWithSize:CGSizeMake(20.0, 20.0) andRelativeOrigin:CGPointMake(1.0, 0.5)];
+    
+    testGround.location = cc3v(1.0, -5.0, 0.0);
+    testGround.rotation = cc3v(90.0, 0.0, 0.0);
+    testGround.shouldCullBackFaces = NO;
+    
+    [self addChild:testGround];
+    
+//    CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+//    cam.location = cc3v( 0.5, 1.0, 3.0 );
+//    [testGround addChild: cam];
+    
+    
+}
+
 
 /** Loads a POD file containing an animated robot arm, a camera, and an animated light. */
 -(void) addRobot {
@@ -727,7 +763,7 @@ enum {
 {
     [self addContentFromPODFile: @"Untitled.pod" withName:@"test"];
     
-    CC3MeshNode* test = (CC3MeshNode*)[self getNodeNamed: @"test"];
+    test = (CC3MeshNode*)[self getNodeNamed: @"test"];
     test.shaderProgram = [CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
     [test setLocation:cc3v(0.0, 0.0, 0.0)];
     [test setRotation:cc3v(-20.0, 0.0, 0.0)];
@@ -870,7 +906,7 @@ enum {
     //Iterate over the bodies in the physics world
     for (b2Body* b = _world->GetBodyList(); b; b = b->GetNext())
     {
-        NSLog(@"body position x:%f y:%f", b->GetPosition().x, b->GetPosition().y);
+//        NSLog(@"body position x:%f y:%f", b->GetPosition().x, b->GetPosition().y);
         
         if (b->GetUserData() != NULL) {
             
@@ -973,6 +1009,28 @@ enum {
 		cam.rotation = camRot;
 	}
 }
+
+#pragma mark camera
+/**
+ * When the user hits the switch-camera-target button, cycle through a series of four
+ * different camera targets. The actual movement of the camera to home in on a new target
+ * is handled by a CCActionInterval, so that the movement appears smooth and animated.
+ */
+-(void) switchCameraTarget {
+    if (cameraTarget == testGround) {
+        cameraTarget = test;
+    }else{
+        cameraTarget = testGround;
+	}
+    
+	CC3Camera* cam = self.activeCamera;
+	cam.target = nil;			// Ensure the camera is not locked to the original target
+	[cam stopAllActions];
+	[cam runAction: [CC3RotateToLookAt actionWithDuration: 2.0 targetLocation: cameraTarget.globalLocation]];
+	LogInfo(@"Camera target toggled to %@", cameraTarget);
+}
+
+
 
 #pragma mark Scene opening and closing
 
