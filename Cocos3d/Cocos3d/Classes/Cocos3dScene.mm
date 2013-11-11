@@ -16,6 +16,7 @@ extern "C" {
 #import "CC3MeshNode.h"
 #import "CC3Camera.h"
 #import "CC3Light.h"
+#import <CC3Billboard.h>
 
 
 #import "CC3ControllableLayer.h"
@@ -27,6 +28,7 @@ extern "C" {
 #import "ccTypes.h"
 
 #import "CCPhysicsSprite.h"
+
 
 
 #define PTM_RATIO 32
@@ -45,13 +47,15 @@ enum {
     CGSize screenSize;
     
     b2Body* earthBody;
-    b2Body* testGroundBody;
+    b2Body* groundBody;
+    b2Body* cubeBody;
 }
 
 @property (nonatomic) CC3MeshNode *earth;
-@property (nonatomic) CC3MeshNode *testGround;
+@property (nonatomic) CC3MeshNode *ground;
 @property (nonatomic) CC3MeshNode *test;
 
+@property (nonatomic) CC3BoxNode *cube;
 
 
 @property (nonatomic) CC3Node* cameraTarget;
@@ -66,8 +70,11 @@ enum {
 
 
 @synthesize earth;
-@synthesize testGround;
+@synthesize ground;
 @synthesize test;
+
+@synthesize cube;
+
 @synthesize cameraTarget;
 
 
@@ -121,25 +128,28 @@ enum {
     /*
      * Draw Backround & Ground
      */
-    [self addBackdrop];
-    [self addGroundTest];
-
     
+    [self addBackdrop];
+    [self addGround];
+    
+//    [self addLabel];
+//    [self addBillboard];
+   
     /*
      * Add objects
      */
     
-//    [self addTestPOD];
+    [self addTestPOD];
 //    [self addBall];
     [self addEarth];
+    [self drawCube];
+
     
-//	[self addGround];				// Add a ground plane to provide some perspective to the user
 //    [self addRobot];				// Add an animated robot arm, a light, and a camera. This POD file
     // contains the primary camera of this scene.
 
 //    [self drawMeshNode];
     //    [self drawLine];
-//    [self drawCube];
 //    [self drawSphere];
     
     [self configureLighting];		// Set up the lighting
@@ -193,6 +203,81 @@ enum {
     CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, 0.001),CC3VectorScaleUniform(cam.globalForwardDirection, 0.5));
     
     cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
+}
+
+- (void)addLabel
+{
+    CC3BitmapLabelNode *bmLabel = [[CC3BitmapLabelNode alloc] initWithName:@"I am a label."];
+//    bmLabel.radius = 50;
+	bmLabel.textAlignment = NSTextAlignmentCenter;
+	bmLabel.relativeOrigin = ccp(0.5, 0.5);
+	bmLabel.tessellation = CC3TessellationMake(4, 1);
+//	bmLabel.fontFileName = @"Arial32BMGlyph.fnt";
+	bmLabel.labelString = @"Hello, world!";
+//	_bmLabelMessageIndex = 0;	// Keep track of which message is being displayed
+	
+	bmLabel.location = cc3v(-150.0, 75.0, 500.0);
+	bmLabel.rotation = cc3v(0.0, 180.0, 0.0);
+	bmLabel.uniformScale = 2.0;
+	bmLabel.color = ccc3(0, 220, 120);
+	bmLabel.shouldCullBackFaces = NO;			// Show from behind as well.
+	bmLabel.shouldBlendAtFullOpacity = YES;		// We're fading in, so ensure blending remains
+	bmLabel.touchEnabled = YES;
+
+    [self addChild:bmLabel];
+}
+
+- (void)addBillboard
+{
+    CCLabelTTF* bbLabel = [CCLabelTTF labelWithString: @"Whoa...I'm dizzy!"
+											 fontName: @"Marker Felt"
+											 fontSize: 18.0];
+    CC3Billboard *bb = [[CC3Billboard alloc] initWithBillboard:bbLabel];
+    bb.color = ccYELLOW;
+    
+    // The billboard is a one-sided rectangular mesh, and would not normally be visible
+	// from the back side. This is not an issue, since it is configured to always face
+	// the camera. However, this also affects its ability to cast a shadow when the light
+	// is behind it. Set the back faces to draw so that a shadow will be cast when the
+	// light is behind the billboard.
+    //	bb.shouldCullBackFaces = NO;
+	
+	// As the hose emitter moves around, it is sometimes in front of this billboard,
+	// but emits some particles behind this billboard. The result is that those
+	// particles are blocked by the transparent parts of the billboard and appear to
+	// inappropriately disappear. To compensate, set the explicit Z-order of the
+	// billboard to be either always in-front of (< 0) or always behind (> 0) the
+	// particle emitter. You can experiment with both options here. Or set the Z-order
+	// to zero (the default and same as the emitter), and see what the problem is in
+	// the first place! The problem is more evident when the emitter is set to a wide
+	// dispersion angle.
+	bb.zOrder = -1;
+	
+	// Uncomment to see the extent of the label as it moves in the 3D scene
+    //	bb.shouldDrawLocalContentWireframeBox = YES;
+	
+	// A billboard can be drawn either as part of the 3D scene, or as an overlay
+	// above the 3D scene. By commenting out one of the following sections of code,
+	// you can choose which method to use.
+	
+	// 1) In the 3D scene.
+	// Locate the billboard at the end of the robot's arm, and tell it to
+	// find the camera and track it, so that it always faces the camera.
+//	bb.location = cc3v( 0.0, 90.0, 0.0 );
+//	bb.shouldAutotargetCamera = YES;
+//    [self addChild:bb];
+    
+	// 2) Overlaid above the 3D scene.
+	// The following lines add the emitter billboard as a 2D overlay that draws above
+	// the 3D scene. The label text will not be occluded by any other 3D nodes.
+	// Comment out the lines just above, and uncomment the following lines:
+	bb.shouldDrawAs2DOverlay = YES;
+	bb.location = cc3v( 0.0, 80.0, 0.0 );
+	bb.unityScaleDistance = 425.0;
+	bb.offsetPosition = ccp( 0.0, 15.0 );
+    [earth addChild:bb];
+
+    //	[[self getNodeNamed: kRobotTopArm] addChild: bb];
 }
 
 /**
@@ -327,61 +412,7 @@ enum {
 //	CC3Texture.isPreloading = NO;
 }
 
-/** Various options for configuring interesting camera behaviours. */
--(void) configureCamera {
-    // Create the camera
-//	CC3Camera* cam = self.activeCamera;
-	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 0.5, 0.5 );
-    cam.target = earth;
-    cam.shouldTrackTarget = YES; //move relative to the target
-	[self addChild: cam];
-    [self setActiveCamera:cam];
-    
-	// Camera starts out embedded in the scene.
-	_cameraZoomType = kCameraZoomNone;
-	
-	// The camera comes from the POD file and is actually animated.
-	// Stop the camera from being animated so the user can control it via the user interface.
-	[cam disableAnimation];
-	
-	// Keep track of which object the camera is pointing at
-	_origCamTarget = cam.target;
-	_camTarget = _origCamTarget;
-    
-	// For cameras, the scale property determines camera zooming, and the effective field-of-view.
-	// You can adjust this value to play with camera zooming. Conversely, if you find that objects
-	// in the periphery of your view appear elongated, you can adjust the fieldOfView and/or
-	// uniformScale properties to reduce this "fish-eye" effect. See the notes of the CC3Camera
-	// fieldOfView property for more on this.
-	cam.uniformScale = 1.0;
-	
-	// You can configure the camera to use orthographic projection instead of the default
-	// perspective projection by setting the isUsingParallelProjection property to YES.
-	// You will also need to adjust the scale to match the different projection.
-//    cam.isUsingParallelProjection = YES;
-//    cam.uniformScale = 0.015;
-	
-	// To see the effect of mounting a camera on a moving object, uncomment the following
-	// lines to mount the camera on a virtual boom attached to the beach ball.
-	// Since the beach ball rotates as it bounces, you might also want to comment out the
-	// CC3RotateBy action that is run on the beachBall in the addBeachBall method!
-    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
-    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
-    //	cam.rotation = cc3v(0.0, 90.0, 0.0);	// Point camera out over the beach ball
-    
-    
-	// To see the effect of mounting a camera on a moving object AND having the camera track a
-	// location or object, even as the moving object bounces and rotates, uncomment the following
-	// lines to mount the camera on a virtual boom attached to the beach ball, but stay pointed at
-	// the moving rainbow teapot, even as the beach ball that the camera is mounted on bounces and
-	// rotates. In this case, you do not need to comment out the CC3RotateBy action that is run on
-	// the beachBall in the addBeachBall method
-    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
-    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
-    //	cam.target = teapotSatellite;			// Look toward the rainbow teapot...
-    //	cam.shouldTrackTarget = YES;			// ...and track it as it moves
-}
+
 
 /** Configure the lighting. */
 -(void) configureLighting {
@@ -414,6 +445,69 @@ enum {
 	// the following line. This can be useful when reviewing shadowing.
     //	[_robotLamp disableAnimation];
 	
+}
+
+/** Various options for configuring interesting camera behaviours. */
+-(void) configureCamera {
+    // Create the camera
+//    CC3Camera* cam = self.activeCamera;
+	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+    [self addChild: cam];
+//    [self setActiveCamera:cam];
+    
+	// Camera starts out embedded in the scene.
+	_cameraZoomType = kCameraZoomNone;
+	
+	// The camera comes from the POD file and is actually animated.
+	// Stop the camera from being animated so the user can control it via the user interface.
+	[cam disableAnimation];
+	
+	// Keep track of which object the camera is pointing at
+	_origCamTarget = cam.target;
+	_camTarget = _origCamTarget;
+    
+	// For cameras, the scale property determines camera zooming, and the effective field-of-view.
+	// You can adjust this value to play with camera zooming. Conversely, if you find that objects
+	// in the periphery of your view appear elongated, you can adjust the fieldOfView and/or
+	// uniformScale properties to reduce this "fish-eye" effect. See the notes of the CC3Camera
+	// fieldOfView property for more on this.
+	cam.uniformScale = 1.0;
+    cam.fieldOfView = 45.0;
+//    cam.nearClippingDistance = 20.0;
+//    [cam moveToShowAllOf:earth withPadding:1.0];
+	
+	// You can configure the camera to use orthographic projection instead of the default
+	// perspective projection by setting the isUsingParallelProjection property to YES.
+	// You will also need to adjust the scale to match the different projection.
+    //    cam.isUsingParallelProjection = YES;
+    //    cam.uniformScale = 0.015;
+	
+	// To see the effect of mounting a camera on a moving object, uncomment the following
+	// lines to mount the camera on a virtual boom attached to the beach ball.
+	// Since the beach ball rotates as it bounces, you might also want to comment out the
+	// CC3RotateBy action that is run on the beachBall in the addBeachBall method!
+    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
+    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
+    //	cam.rotation = cc3v(0.0, 90.0, 0.0);	// Point camera out over the beach ball
+    
+    
+	// To see the effect of mounting a camera on a moving object AND having the camera track a
+	// location or object, even as the moving object bounces and rotates, uncomment the following
+	// lines to mount the camera on a virtual boom attached to the beach ball, but stay pointed at
+	// the moving rainbow teapot, even as the beach ball that the camera is mounted on bounces and
+	// rotates. In this case, you do not need to comment out the CC3RotateBy action that is run on
+	// the beachBall in the addBeachBall method
+    //	[beachBall addChild: cam];				// Mount the camera on the beach ball
+    //	cam.location = cc3v(2.0, 1.0, 0.0);		// Relative to the parent beach ball
+    //	cam.target = teapotSatellite;			// Look toward the rainbow teapot...
+    //	cam.shouldTrackTarget = YES;			// ...and track it as it moves
+   
+//    [testGround addChild:cam];
+    cam.location = cc3v( 0.0, 1.0, 1.0 );
+//    cam.rotation = cc3v(90.0, 0.0, 0.0);
+    cam.target = earth;
+    cam.shouldTrackTarget = YES; //move relative to the target
+    [self setActiveCamera:cam];
 }
 
 /**
@@ -532,55 +626,46 @@ enum {
  */
 -(void) addBackdrop {
 #define kSkyColor						ccc4f(0.4, 0.5, 0.9, 1.0)
+#define kBrickTextureFile				@"Bricks-Red.jpg"
+
 //	if (self.cc3Layer.isOverlayingDeviceCamera) return;
 	self.backdrop = [CC3ClipSpaceNode nodeWithColor: kSkyColor];
-    //	self.backdrop = [CC3ClipSpaceNode nodeWithTexture: [CC3Texture textureFromFile: kBrickTextureFile]];
+//    self.backdrop = [CC3ClipSpaceNode nodeWithTexture: [CC3Texture textureFromFile: kBrickTextureFile]];
 }
 
 /**
  * Add a large circular grass-covered ground to give everything perspective.
  * The ground is tessellated into many smaller faces to improve realism of spotlight.
  */
--(void) addGround {
-#define kGroundName						@"Ground"
-#define kGroundTextureFile				@"Grass.jpg"
-    
-	_ground = [CC3PlaneNode nodeWithName: kGroundName];
-	[_ground populateAsDiskWithRadius: 1500 andTessellation: CC3TessellationMake(8, 32)];
-	_ground.texture = [CC3Texture textureFromFile: kGroundTextureFile];
-    
-	// To experiment with repeating textures, uncomment the following line
-	[_ground repeatTexture: (ccTex2F){10, 10}];	// Grass
-    //	[_ground repeatTexture: (ccTex2F){3, 3}];	// MountainGrass
-	
-	_ground.location = cc3v(0.0, -5.0, 0.0);
-	_ground.rotation = cc3v(-75.0, 0.0, 0.0);
-	_ground.shouldCullBackFaces = NO;	// Show the ground from below as well.
-	_ground.touchEnabled = YES;			// Allow the ground to be selected by touch events.
-	[_ground retainVertexLocations];	// Retain location data in main memory, even when it
-    // is buffered to a GL VBO via releaseRedundantContent,
-    // so that it may be accessed for further calculations
-    // when dropping objects on the ground.
-	[self addChild: _ground];
-}
 
-- (void)addGroundTest
+- (void)addGround
 {
+#define kGroundName						@"Ground"
+#define kGroundTextureFile				@"grass2.jpg"
     double width = 20;
     double length = 100;
-    testGround = [[CC3PlaneNode alloc] init];
-    testGround.color = ccBLUE;
-    [testGround populateAsRectangleWithSize:CGSizeMake(width, length) andRelativeOrigin:CGPointMake(0.0, 0.0)];
+    ground = [CC3PlaneNode nodeWithName:@"Ground"];
+    [ground populateAsRectangleWithSize:CGSizeMake(width, length) andRelativeOrigin:CGPointMake(0.0, 0.0)];
+
+//    ground.color = ccBLUE;
+    [ground setTexture:[CC3Texture textureFromFile: kGroundTextureFile]];
+    [ground repeatTexture: (ccTex2F){10, 10}];	// Grass
+
+    ground.location = cc3v(0.0, 0.0, 0.0);
+    ground.rotation = cc3v(-90.0, 180.0, 0.0);
+    ground.shouldCullBackFaces = YES;
+    [ground retainVertexLocations];
     
-    testGround.location = cc3v(-width, 0.0, -length/2);
-    testGround.rotation = cc3v(90.0, 0.0, 0.0);
-    testGround.shouldCullBackFaces = NO;
-    
-    [self addChild:testGround];
+    [self addChild:ground];
     
 //    CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
 //    cam.location = cc3v( 0.5, 1.0, 3.0 );
-//    [testGround addChild: cam];
+//    [ground addChild: cam];
+    
+    CC3Light* lamp = [CC3Light node];
+	lamp.location = cc3v( 0.0, 0.0, 50.0 ); //add lamp for the ground
+	lamp.isDirectionalOnly = NO;
+	[ground addChild: lamp];
     
     /*
     //create earth body
@@ -588,9 +673,9 @@ enum {
     groundBodyDef.type = b2_dynamicBody;
     //    earthBodyDef.position.Set(0.0, 0.0);
     groundBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-    groundBodyDef.userData = testGround;
+    groundBodyDef.userData = ground;
     groundBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
-    testGroundBody = _world->CreateBody(&groundBodyDef);
+    groundBody = _world->CreateBody(&groundBodyDef);
     
     // Create plane shape
     b2Vec2 vertices[4];
@@ -609,7 +694,7 @@ enum {
     groundShapeDef.density = 0.0f;
     groundShapeDef.restitution = 0.35f;
     groundShapeDef.isSensor = FALSE;
-    b2Fixture *groundFixture = testGroundBody->CreateFixture(&groundShapeDef);
+    b2Fixture *groundFixture = groundBody->CreateFixture(&groundShapeDef);
      */
 }
 
@@ -666,7 +751,7 @@ enum {
     groundBodyDef.position.Set(0, 0); // bottom-left corner
     
     // The body is also added to the world.
-    b2Body* groundBody = _world->CreateBody(&groundBodyDef);
+    groundBody = _world->CreateBody(&groundBodyDef);
     groundBody->SetType(b2_staticBody);
     
     // Define the ground box shape.
@@ -765,7 +850,7 @@ enum {
 
 - (void)addEarth
 {
-    double initX = 0.0;
+    double initX = 5.0;
     double initY = 80.0;
     double initZ = 0.0;
     
@@ -775,6 +860,8 @@ enum {
     [earth setLocation:cc3v(initX, initY, initZ)];
 //    [earth setRotation:cc3v(-20.0, 0.0, 0.0)];
 //    [earth translateBy:cc3v(100.0, 0.0, 0.0)];
+    
+    //animation
     CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
                                                           rotateBy: cc3v(0.0, 30.0, 0.0)];
     [earth runAction: [CCRepeatForever actionWithAction: partialRot]];
@@ -783,7 +870,8 @@ enum {
    // Create the camera, place it back a bit, and add it to the world
 	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
 	cam.location = cc3v( 0.0, 0.0, 3.0 );
-	[earth addChild: cam];
+	[earth addChild:cam];
+    
 
    // Create a light, place it back and to the left at a specific
 	// position (not just directional lighting), and add it to the world
@@ -803,7 +891,7 @@ enum {
     
     // Create circle shape
     b2CircleShape circle;
-    circle.m_radius = 15; //not sure what the earth raidus is
+    circle.m_radius = 14; //not sure what the earth raidus is
     
     // Create shape definition and add to body
     b2FixtureDef earthShapeDef;
@@ -831,30 +919,7 @@ enum {
     
 }
 
-- (void)createBox2dProperty:(CC3MeshNode*)node
-{
-    //create body
-    b2BodyDef bodyDef;
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(2.0, 2.0);
-//    bodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-    bodyDef.userData = node;
-    bodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
-    b2Body *body = _world->CreateBody(&bodyDef);
-    
-//    // Create circle shape
-//    b2CircleShape circle;
-//    circle.m_radius = screenSize.width/5/PTM_RATIO;
-    
-    // Create shape definition and add to body
-    b2FixtureDef fixtureDef;
-//    earthShapeDef.shape = &circle;
-    fixtureDef.density = 0.0f;
-    //    earthShapeDef.friction = 0.2f;
-    fixtureDef.restitution = 0.35f;
-    fixtureDef.isSensor = FALSE;
-    b2Fixture *fixture = body->CreateFixture(&fixtureDef);
-}
+
 
 - (void)drawLine
 {
@@ -870,27 +935,48 @@ enum {
 
 - (void)drawCube
 {
-    CC3Vector a = CC3VectorMake(10.0, 10.0, 10.0);
-    CC3Vector b = CC3VectorMake(20.0, 20.0, 20.0);
+    CC3Vector a = CC3VectorMake(0.0, 0.0, 0.0);
+    CC3Vector b = CC3VectorMake(2.0, 2.0, 2.0);
     CC3Box box = CC3BoxFromMinMax(a, b);
     
-    CC3BoxNode *cube = [[CC3BoxNode alloc] init];
+    cube = [[CC3BoxNode alloc] init];
 //    CC3VertexShader *vertexShader = [[CC3VertexShader alloc] initWithName:@"spotlight.vsh"];
 //    CC3FragmentShader *fragmentShader = [[CC3FragmentShader alloc] initWithName:@"spotlight.fsh"];
 //    cube.shaderProgram = [CC3ShaderProgram programWithVertexShader:vertexShader andFragmentShader:fragmentShader];
     
     cube.shaderProgram = [CC3ShaderProgram programFromVertexShaderFile: @"CC3Texturable.vsh" andFragmentShaderFile: @"CC3BumpMapObjectSpace.fsh"];
-    cube.touchEnabled = YES;
+//    cube.touchEnabled = YES;
     [cube setColor:ccc3(255.0, 0.0, 0.0)];
     [cube populateAsSolidBox:box];
-    [cube setLocation:CC3VectorMake(0, 0, 0)];
+    [cube setLocation:cc3v(-5.0, 0.0, 0.0)];
     
-    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
-                                                          rotateBy: cc3v(0.0, 10.0, 5.0)];
-    [cube runAction: [CCRepeatForever actionWithAction: partialRot]];
+//    CCActionInterval* partialRot = [CC3RotateBy actionWithDuration: 1.0
+//                                                          rotateBy: cc3v(0.0, 10.0, 5.0)];
+//    [cube runAction: [CCRepeatForever actionWithAction: partialRot]];
     
     
     [self addChild:cube];
+    
+    
+    //create body
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_staticBody;
+    bodyDef.position.Set(-5, 0);
+    bodyDef.userData = cube;
+    cubeBody = _world->CreateBody(&bodyDef);
+    
+    // Create circle shape
+    b2PolygonShape shape;
+    shape.SetAsBox(2, 2);
+    
+    // Create shape definition and add to body
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &shape;
+    fixtureDef.density = 0.0f;
+    fixtureDef.friction = 0.2f;
+    fixtureDef.restitution = 0.35f;
+    fixtureDef.isSensor = FALSE;
+    cubeBody->CreateFixture(&fixtureDef);
     
 }
 
@@ -912,10 +998,10 @@ enum {
     
 }
 
-- (void)drawMeshNode
-{
-    CC3MeshNode *meshNode = [[CC3MeshNode alloc] initWithName:@"myMeshNode"];
-}
+//- (void)drawMeshNode
+//{
+//    CC3MeshNode *meshNode = [[CC3MeshNode alloc] initWithName:@"myMeshNode"];
+//}
 
 
 #pragma mark Updating custom activity
@@ -931,18 +1017,31 @@ enum {
 -(void) updateBeforeTransform: (CC3NodeUpdatingVisitor*) visitor {
     [self updateCameraFromControls: visitor.deltaTime];
 
-    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
+//    Cocos3dAppDelegate* mainDelegate = (Cocos3dAppDelegate *)[[UIApplication sharedApplication]delegate];
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
     
-//    [self printLocation];
+    [self printLocation];
 
 }
 
 - (void)printLocation
 {
+    CC3Vector activeCamLoc = self.activeCamera.globalLocation;
+    NSLog(@"Active camera: x:%f y:%f z:%f", activeCamLoc.x, activeCamLoc.y, activeCamLoc.z);
+    
+    //TODO set active camera z hardcode
+//    self.activeCamera.globalLocation.z = 0;
+    
+    NSLog(@"Ground x:%f y:%f z:%f", ground.globalLocation.x, ground.globalLocation.y, ground.globalLocation.z);
+
+    
     NSLog(@"Earth x:%f y:%f z:%f", earth.globalLocation.x, earth.globalLocation.y, earth.globalLocation.z);
     NSLog(@"EarthBody x:%f y:%f", earthBody->GetPosition().x, earthBody->GetPosition().y);
+    
+    NSLog(@"Cube x:%f y:%f z:%f", cube.globalLocation.x, cube.globalLocation.y, cube.globalLocation.z);
+    NSLog(@"CubeBody x:%f y:%f", cubeBody->GetPosition().x, cubeBody->GetPosition().y);
+
 }
 
 /**
@@ -973,7 +1072,8 @@ enum {
     {
 //        NSLog(@"body position x:%f y:%f", b->GetPosition().x, b->GetPosition().y);
         
-        if (b->GetUserData() != NULL) {
+        
+        if (b->GetType() == b2_dynamicBody && b->GetUserData() != NULL) {
             
             CGSize winSz = [[CCDirector sharedDirector] winSizeInPixels];
             GLfloat aspect = winSz.width / winSz.height;
@@ -1002,15 +1102,15 @@ enum {
         }
     }
     
-//    for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
+    for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
 //        NSLog(@"Contact!");
         
-//        b2Body *a = contact->GetFixtureA()->GetBody();
-//        b2Body *b = contact->GetFixtureB()->GetBody();
+        b2Body *a = contact->GetFixtureA()->GetBody();
+        b2Body *b = contact->GetFixtureB()->GetBody();
         
-//        [self handleContactByReverseForce:a andB:b];
+        [self handleContactByReverseForce:a andB:b];
 //        [self handleContactByReverseVelocity:a andB:b];
-//    }
+    }
     
     previousTime = CACurrentMediaTime();
 }
@@ -1070,7 +1170,8 @@ enum {
         
 		// Get the X-Y delta value of the control and scale it to something suitable
 		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
-        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
+        double factor = 3;
+//        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
         
 		// We want to move the camera forward and backward, and side-to-side,
 		// from the camera's (the user's) point of view.
@@ -1082,7 +1183,7 @@ enum {
 		// camera location plus the movement.
         // globalRightDirection - x, globalForwardDirection - y, globalUpDirection - z
         
-		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y));
+		CC3Vector moveVector = CC3VectorAdd(CC3VectorScaleUniform(cam.globalRightDirection, delta.x*factor),CC3VectorScaleUniform(cam.globalForwardDirection, delta.y*factor));
         
         
 		cam.location = CC3VectorAdd(cam.location, moveVector); //change camera location
@@ -1111,10 +1212,10 @@ enum {
  * is handled by a CCActionInterval, so that the movement appears smooth and animated.
  */
 -(void) switchCameraTarget {
-    if (cameraTarget == testGround) {
+    if (cameraTarget == ground) {
         cameraTarget = test;
     }else{
-        cameraTarget = testGround;
+        cameraTarget = ground;
 	}
     
 	CC3Camera* cam = self.activeCamera;

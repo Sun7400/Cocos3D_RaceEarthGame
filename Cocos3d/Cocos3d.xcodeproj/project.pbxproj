@@ -10,6 +10,9 @@
 		4C04A50D18308B83008C4930 /* ArrowLeftButton48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */; };
 		4C04A50E18308B83008C4930 /* ArrowUpButton48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */; };
 		4C04A50F18308B83008C4930 /* ButtonRing48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A50C18308B83008C4930 /* ButtonRing48x48.png */; };
+		4C04A51718319791008C4930 /* Bricks-Red.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51618319791008C4930 /* Bricks-Red.jpg */; };
+		4C04A51918319B5E008C4930 /* green-grass-texture.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51818319B5E008C4930 /* green-grass-texture.jpg */; };
+		4C04A51B18319D30008C4930 /* grass2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51A18319D30008C4930 /* grass2.jpg */; };
 		4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C207FE2182C55F8005B1335 /* CoreMotion.framework */; };
 		4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C207FE4182D41FF005B1335 /* Untitled.pod */; };
 		4C207FEF182D59F5005B1335 /* spotlight.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 4C207FED182D59F5005B1335 /* spotlight.fsh */; };
@@ -374,6 +377,9 @@
 		4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowLeftButton48x48.png; sourceTree = "<group>"; };
 		4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ArrowUpButton48x48.png; sourceTree = "<group>"; };
 		4C04A50C18308B83008C4930 /* ButtonRing48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ButtonRing48x48.png; sourceTree = "<group>"; };
+		4C04A51618319791008C4930 /* Bricks-Red.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Bricks-Red.jpg"; sourceTree = "<group>"; };
+		4C04A51818319B5E008C4930 /* green-grass-texture.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "green-grass-texture.jpg"; sourceTree = "<group>"; };
+		4C04A51A18319D30008C4930 /* grass2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass2.jpg; sourceTree = "<group>"; };
 		4C207FE2182C55F8005B1335 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		4C207FE4182D41FF005B1335 /* Untitled.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Untitled.pod; sourceTree = "<group>"; };
 		4C207FED182D59F5005B1335 /* spotlight.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = spotlight.fsh; sourceTree = "<group>"; };
@@ -1166,7 +1172,6 @@
 				4C2E75E71823459E0072F6F0 /* asset */,
 				4C2E714A18231D420072F6F0 /* README! */,
 				4C2E6E1418231D3C0072F6F0 /* libs */,
-				4C2E6F8818231D3E0072F6F0 /* cocos3d */,
 				4C2E714B18231D420072F6F0 /* Resources */,
 				4C2E717618231D420072F6F0 /* Classes */,
 				4C2E717318231D420072F6F0 /* Supporting Files */,
@@ -1177,6 +1182,7 @@
 		4C2E6E1418231D3C0072F6F0 /* libs */ = {
 			isa = PBXGroup;
 			children = (
+				4C2E6F8818231D3E0072F6F0 /* cocos3d */,
 				4C2E76AB1823588C0072F6F0 /* Box2D */,
 				4C2E6F3F18231D3D0072F6F0 /* LICENSE_cocos2d.txt */,
 				4C2E6F5518231D3E0072F6F0 /* LICENSE_CocosDenshion.txt */,
@@ -2035,6 +2041,9 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C04A51A18319D30008C4930 /* grass2.jpg */,
+				4C04A51818319B5E008C4930 /* green-grass-texture.jpg */,
+				4C04A51618319791008C4930 /* Bricks-Red.jpg */,
 				4C04A50A18308B83008C4930 /* ArrowLeftButton48x48.png */,
 				4C04A50B18308B83008C4930 /* ArrowUpButton48x48.png */,
 				4C04A50C18308B83008C4930 /* ButtonRing48x48.png */,
@@ -2313,6 +2322,7 @@
 			files = (
 				4C2E714718231D420072F6F0 /* CC3SingleTextureReflectAlphaTest.fsh in Resources */,
 				4C2E712918231D410072F6F0 /* CC3ClipSpaceSingleTexture.fsh in Resources */,
+				4C04A51B18319D30008C4930 /* grass2.jpg in Resources */,
 				4C2E711F18231D410072F6F0 /* CC3BumpMapObjectSpace.fsh in Resources */,
 				4C2E718518231D420072F6F0 /* fps_images-hd.png in Resources */,
 				4C2E712318231D410072F6F0 /* CC3BumpMapTangentSpace.fsh in Resources */,
@@ -2343,6 +2353,7 @@
 				4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */,
 				4C2E713D18231D410072F6F0 /* CC3PureColor.fsh in Resources */,
 				4C04A50E18308B83008C4930 /* ArrowUpButton48x48.png in Resources */,
+				4C04A51918319B5E008C4930 /* green-grass-texture.jpg in Resources */,
 				4C2E712F18231D410072F6F0 /* CC3NoTexture.fsh in Resources */,
 				4C2E714918231D420072F6F0 /* CC3Texturable.vsh in Resources */,
 				4C2E714118231D420072F6F0 /* CC3SingleTexture.fsh in Resources */,
@@ -2359,6 +2370,7 @@
 				4C2E718118231D420072F6F0 /* hello-world.pod in Resources */,
 				4C2E715F18231D420072F6F0 /* Icon-60.png in Resources */,
 				4C2E712718231D410072F6F0 /* CC3ClipSpaceNoTexture.fsh in Resources */,
+				4C04A51718319791008C4930 /* Bricks-Red.jpg in Resources */,
 				4C2E77241823EFE30072F6F0 /* Balls.pod in Resources */,
 				4C2E713F18231D420072F6F0 /* CC3PureColor.vsh in Resources */,
 				4C2E715718231D420072F6F0 /* Icon-50.png in Resources */,
