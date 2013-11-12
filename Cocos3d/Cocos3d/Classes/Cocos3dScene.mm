@@ -114,8 +114,6 @@ enum {
     screenSize = [CCDirector sharedDirector].winSize;
     previousTime = nil;
 
-
-    
     [self initCustomState];			// Set up any initial state tracked by this subclass
 
     [self preloadAssets];			// Loads, compiles, links, and pre-warms all shader programs
@@ -123,17 +121,15 @@ enum {
     
     //Box2D
     [self setWorld];
-    [self addFrameBody]; //constrain the racecar movement
 
     /*
      * Draw Backround & Ground
      */
-    
     [self addBackdrop];
     [self addGround];
     
 //    [self addLabel];
-//    [self addBillboard];
+    [self addBillboard];
    
     /*
      * Add objects
@@ -193,8 +189,9 @@ enum {
  	// ------------------------------------------
    
 
-
 //    [self  setCam];
+    [self.activeCamera moveToShowAllOf:ground withPadding:0.5];
+
 }
 
 - (void) setCam
@@ -229,7 +226,7 @@ enum {
 
 - (void)addBillboard
 {
-    CCLabelTTF* bbLabel = [CCLabelTTF labelWithString: @"Whoa...I'm dizzy!"
+    CCLabelTTF* bbLabel = [CCLabelTTF labelWithString: @"Race Earth Game!"
 											 fontName: @"Marker Felt"
 											 fontSize: 18.0];
     CC3Billboard *bb = [[CC3Billboard alloc] initWithBillboard:bbLabel];
@@ -263,19 +260,19 @@ enum {
 	// 1) In the 3D scene.
 	// Locate the billboard at the end of the robot's arm, and tell it to
 	// find the camera and track it, so that it always faces the camera.
-//	bb.location = cc3v( 0.0, 90.0, 0.0 );
-//	bb.shouldAutotargetCamera = YES;
-//    [self addChild:bb];
+	bb.location = cc3v( 0.0, 10.0, 0.0 );
+	bb.shouldAutotargetCamera = YES;
+    [self addChild:bb];
     
 	// 2) Overlaid above the 3D scene.
 	// The following lines add the emitter billboard as a 2D overlay that draws above
 	// the 3D scene. The label text will not be occluded by any other 3D nodes.
 	// Comment out the lines just above, and uncomment the following lines:
-	bb.shouldDrawAs2DOverlay = YES;
-	bb.location = cc3v( 0.0, 80.0, 0.0 );
-	bb.unityScaleDistance = 425.0;
-	bb.offsetPosition = ccp( 0.0, 15.0 );
-    [earth addChild:bb];
+//	bb.shouldDrawAs2DOverlay = YES;
+//	bb.location = cc3v( 0.0, 80.0, 0.0 );
+//	bb.unityScaleDistance = 425.0;
+//	bb.offsetPosition = ccp( 0.0, 15.0 );
+//    [self addChild:bb];
 
     //	[[self getNodeNamed: kRobotTopArm] addChild: bb];
 }
@@ -508,6 +505,10 @@ enum {
     cam.target = earth;
     cam.shouldTrackTarget = YES; //move relative to the target
     [self setActiveCamera:cam];
+    
+    cam.viewport = CC3ViewportMake(0, 0, 1, 1);
+    [self.activeCamera moveToShowAllOf:ground];
+
 }
 
 /**
@@ -651,7 +652,7 @@ enum {
     [ground setTexture:[CC3Texture textureFromFile: kGroundTextureFile]];
     [ground repeatTexture: (ccTex2F){10, 10}];	// Grass
 
-    ground.location = cc3v(0.0, 0.0, 0.0);
+    ground.location = cc3v(0.0, -14.0, 0.0);
     ground.rotation = cc3v(-90.0, 180.0, 0.0);
     ground.shouldCullBackFaces = YES;
     [ground retainVertexLocations];
@@ -696,6 +697,36 @@ enum {
     groundShapeDef.isSensor = FALSE;
     b2Fixture *groundFixture = groundBody->CreateFixture(&groundShapeDef);
      */
+    
+    // Define the ground body.
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(0, 0);
+    
+    // The body is also added to the world.
+    groundBody = _world->CreateBody(&groundBodyDef);
+    groundBody->SetType(b2_staticBody);
+    
+    // Define the ground box shape.
+    b2PolygonShape groundBox;
+
+    
+    // bottom
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(width,0));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // right
+//    groundBox.SetAsEdge(b2Vec2(width,0), b2Vec2(width,length));
+//    groundBody->CreateFixture(&groundBox,0);
+//    
+//    // top
+//    groundBox.SetAsEdge(b2Vec2(width,length), b2Vec2(-width,length));
+//    groundBody->CreateFixture(&groundBox,0);
+//    
+//    // left
+//    groundBox.SetAsEdge(b2Vec2(-width,length), b2Vec2(-width,0));
+//    groundBody->CreateFixture(&groundBox,0);
+    
+
 }
 
 
@@ -744,49 +775,6 @@ enum {
 
 
 
-- (void)addFrameBody
-{
-    // Define the ground body.
-    b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0, 0); // bottom-left corner
-    
-    // The body is also added to the world.
-    groundBody = _world->CreateBody(&groundBodyDef);
-    groundBody->SetType(b2_staticBody);
-    
-    // Define the ground box shape.
-    b2PolygonShape groundBox;
-    
-//    double edge = 400/PTM_RATIO;
-//    
-//    groundBox.SetAsBox(edge, edge);
-//    groundBody->CreateFixture(&groundBox, 1);
-    
-//    double tempx = [CCDirector sharedDirector].winSize.width/8;
-//    double tempy = [CCDirector sharedDirector].winSize.height/8;
-    double tempx = 8; // should look at ground width
-    double tempy = 5;
-    
-    NSLog(@"Frame Edge width: %f height: %f", tempx, tempy);
-    
-    
-    // bottom
-    groundBox.SetAsEdge(b2Vec2(-tempx,0), b2Vec2(tempx,0));
-    groundBody->CreateFixture(&groundBox,0);
-
-    // right
-    groundBox.SetAsEdge(b2Vec2(tempx,0), b2Vec2(tempx,tempy));
-    groundBody->CreateFixture(&groundBox,0);
-
-    // top
-    groundBox.SetAsEdge(b2Vec2(tempx,tempy), b2Vec2(-tempx,tempy));
-    groundBody->CreateFixture(&groundBox,0);
-
-    // left
-    groundBox.SetAsEdge(b2Vec2(-tempx,tempy), b2Vec2(-tempx,0));
-    groundBody->CreateFixture(&groundBox,0);
-
-}
 
 - (void)addBall
 {
@@ -851,8 +839,8 @@ enum {
 - (void)addEarth
 {
     double initX = 5.0;
-    double initY = 80.0;
-    double initZ = 0.0;
+    double initY = 50.0;
+    double initZ = 100.0;
     
     [self addContentFromPODFile:@"earth.pod" withName:@"earth"];
     
@@ -1034,13 +1022,13 @@ enum {
 //    self.activeCamera.globalLocation.z = 0;
     
     NSLog(@"Ground x:%f y:%f z:%f", ground.globalLocation.x, ground.globalLocation.y, ground.globalLocation.z);
-
+    NSLog(@"GroundBody x:%f y:%f", groundBody->GetPosition().x, groundBody->GetPosition().y);
     
     NSLog(@"Earth x:%f y:%f z:%f", earth.globalLocation.x, earth.globalLocation.y, earth.globalLocation.z);
     NSLog(@"EarthBody x:%f y:%f", earthBody->GetPosition().x, earthBody->GetPosition().y);
     
-    NSLog(@"Cube x:%f y:%f z:%f", cube.globalLocation.x, cube.globalLocation.y, cube.globalLocation.z);
-    NSLog(@"CubeBody x:%f y:%f", cubeBody->GetPosition().x, cubeBody->GetPosition().y);
+//    NSLog(@"Cube x:%f y:%f z:%f", cube.globalLocation.x, cube.globalLocation.y, cube.globalLocation.z);
+//    NSLog(@"CubeBody x:%f y:%f", cubeBody->GetPosition().x, cubeBody->GetPosition().y);
 
 }
 
@@ -1103,7 +1091,7 @@ enum {
     }
     
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
-//        NSLog(@"Contact!");
+        NSLog(@"Contact!");
         
         b2Body *a = contact->GetFixtureA()->GetBody();
         b2Body *b = contact->GetFixtureB()->GetBody();
@@ -1170,7 +1158,7 @@ enum {
         
 		// Get the X-Y delta value of the control and scale it to something suitable
 		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
-        double factor = 3;
+        double factor = 30;
 //        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
         
 		// We want to move the camera forward and backward, and side-to-side,
