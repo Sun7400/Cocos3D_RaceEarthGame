@@ -13,6 +13,8 @@
 		4C04A51718319791008C4930 /* Bricks-Red.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51618319791008C4930 /* Bricks-Red.jpg */; };
 		4C04A51918319B5E008C4930 /* green-grass-texture.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51818319B5E008C4930 /* green-grass-texture.jpg */; };
 		4C04A51B18319D30008C4930 /* grass2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51A18319D30008C4930 /* grass2.jpg */; };
+		4C04A51D1831B01D008C4930 /* Shine48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51C1831B01D008C4930 /* Shine48x48.png */; };
+		4C04A51F1831B028008C4930 /* ZoomButton48x48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A51E1831B028008C4930 /* ZoomButton48x48.png */; };
 		4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C207FE2182C55F8005B1335 /* CoreMotion.framework */; };
 		4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C207FE4182D41FF005B1335 /* Untitled.pod */; };
 		4C207FEF182D59F5005B1335 /* spotlight.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 4C207FED182D59F5005B1335 /* spotlight.fsh */; };
@@ -380,6 +382,8 @@
 		4C04A51618319791008C4930 /* Bricks-Red.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Bricks-Red.jpg"; sourceTree = "<group>"; };
 		4C04A51818319B5E008C4930 /* green-grass-texture.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "green-grass-texture.jpg"; sourceTree = "<group>"; };
 		4C04A51A18319D30008C4930 /* grass2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass2.jpg; sourceTree = "<group>"; };
+		4C04A51C1831B01D008C4930 /* Shine48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Shine48x48.png; sourceTree = "<group>"; };
+		4C04A51E1831B028008C4930 /* ZoomButton48x48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ZoomButton48x48.png; sourceTree = "<group>"; };
 		4C207FE2182C55F8005B1335 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		4C207FE4182D41FF005B1335 /* Untitled.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Untitled.pod; sourceTree = "<group>"; };
 		4C207FED182D59F5005B1335 /* spotlight.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = spotlight.fsh; sourceTree = "<group>"; };
@@ -2041,6 +2045,8 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C04A51E1831B028008C4930 /* ZoomButton48x48.png */,
+				4C04A51C1831B01D008C4930 /* Shine48x48.png */,
 				4C04A51A18319D30008C4930 /* grass2.jpg */,
 				4C04A51818319B5E008C4930 /* green-grass-texture.jpg */,
 				4C04A51618319791008C4930 /* Bricks-Red.jpg */,
@@ -2372,10 +2378,12 @@
 				4C2E712718231D410072F6F0 /* CC3ClipSpaceNoTexture.fsh in Resources */,
 				4C04A51718319791008C4930 /* Bricks-Red.jpg in Resources */,
 				4C2E77241823EFE30072F6F0 /* Balls.pod in Resources */,
+				4C04A51F1831B028008C4930 /* ZoomButton48x48.png in Resources */,
 				4C2E713F18231D420072F6F0 /* CC3PureColor.vsh in Resources */,
 				4C2E715718231D420072F6F0 /* Icon-50.png in Resources */,
 				4C2E716E18231D420072F6F0 /* Default-568h@2x.png in Resources */,
 				4C2E75E6182345990072F6F0 /* earth.pod in Resources */,
+				4C04A51D1831B01D008C4930 /* Shine48x48.png in Resources */,
 				4C2E716318231D420072F6F0 /* Icon-72.png in Resources */,
 				4C2E715118231D420072F6F0 /* Icon-29@2x.png in Resources */,
 				4C2E714F18231D420072F6F0 /* Icon-29.png in Resources */,

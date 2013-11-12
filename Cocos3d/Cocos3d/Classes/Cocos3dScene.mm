@@ -49,6 +49,9 @@ enum {
     b2Body* earthBody;
     b2Body* groundBody;
     b2Body* cubeBody;
+    
+    CC3Ray _lastCameraOrientation;
+
 }
 
 @property (nonatomic) CC3MeshNode *earth;
@@ -1213,6 +1216,52 @@ enum {
 	LogInfo(@"Camera target toggled to %@", cameraTarget);
 }
 
+
+/**
+ * Cycle between current camera view and two views showing the complete scene.
+ * When the full scene is showing, a wireframe is drawn so we can easily see its extent.
+ */
+-(void) cycleZoom {
+#define kCameraMoveDuration				3.0
+
+	CC3Camera* cam = self.activeCamera;
+	[cam stopAllActions];						// Stop any current camera motion
+	switch (_cameraZoomType) {
+            
+            // Currently in normal view. Remember orientation of camera, turn on wireframe
+            // and move away from the scene along the line between the center of the scene
+            // and the camera until everything in the scene is visible.
+		case kCameraZoomNone:
+			_lastCameraOrientation = CC3RayFromLocDir(cam.globalLocation, cam.globalForwardDirection);
+			self.shouldDrawWireframeBox = YES;
+			[cam moveWithDuration: kCameraMoveDuration toShowAllOf: self];
+			_cameraZoomType = kCameraZoomStraightBack;	// Mark new state
+			break;
+            
+            // Currently looking at the full scene.
+            // Move to view the scene from a different direction.
+		case kCameraZoomStraightBack:
+			self.shouldDrawWireframeBox = YES;
+			[cam moveWithDuration: kCameraMoveDuration
+					  toShowAllOf: self
+					fromDirection: cc3v(-1.0, 1.0, 1.0)];
+			_cameraZoomType = kCameraZoomBackTopRight;	// Mark new state
+			break;
+            
+            // Currently in second full-scene view.
+            // Turn off wireframe and move back to the original location and orientation.
+		case kCameraZoomBackTopRight:
+		default:
+			self.shouldDrawDescriptor = NO;
+			self.shouldDrawWireframeBox = NO;
+			[cam runAction: [CC3MoveTo actionWithDuration: kCameraMoveDuration
+												   moveTo: _lastCameraOrientation.startLocation]];
+			[cam runAction: [CC3RotateToLookTowards actionWithDuration: kCameraMoveDuration
+													  forwardDirection: _lastCameraOrientation.direction]];
+			_cameraZoomType = kCameraZoomNone;	// Mark new state
+			break;
+	}
+}
 
 
 #pragma mark Scene opening and closing

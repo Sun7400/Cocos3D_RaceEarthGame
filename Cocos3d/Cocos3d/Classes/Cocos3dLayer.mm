@@ -60,6 +60,7 @@
     
 	[self addJoysticks];
     [self addSwitchViewButton];
+    [self addZoomButton];
     
     //set up gyroscope
     [self initializeDeviceMotion];
@@ -190,7 +191,43 @@
 	[self.cc3Scene switchCameraTarget];
 }
 
+/**
+ * Creates a button (actually a single-item menu) in the bottom center of the layer
+ * that will allow the user to move between viewing the whole scene and viewing
+ * from the previous position.
+ */
+-(void) addZoomButton {
+#define kZoomButtonFileName				@"ZoomButton48x48.png"
+#define kButtonShineFileName			@"Shine48x48.png"
+#define kPeakShineOpacity				180
 
+	// Set up the menu item and position it in the bottom center of the layer
+	zoomMI = [AdornableMenuItemImage itemWithNormalImage: kZoomButtonFileName
+										   selectedImage: kZoomButtonFileName
+												  target: self
+												selector: @selector(cycleZoom:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu
+	// item uses a shine adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+    
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonShineFileName];
+	shineSprite.color = ccWHITE;
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+															peakOpacity: kPeakShineOpacity];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(zoomMI.contentSize), zoomMI.anchorPoint);
+	zoomMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: zoomMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
+/** The user has pressed the zoom button. Tell the 3D scene. */
+-(void) cycleZoom: (CCMenuItemToggle*) svMI { [self.cc3Scene cycleZoom]; }
 
 /**
  * Positions the buttons between the two joysticks.
@@ -211,6 +248,9 @@
 	invasionMI.position = ccp(middle, btnY);
 	sunlightMI.position = ccp(middle + (kButtonGrid * 1.0), btnY);
 }
+
+
+
 
 #pragma mark Updating layer
 
