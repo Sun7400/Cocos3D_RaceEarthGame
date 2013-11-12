@@ -10,6 +10,7 @@ extern "C" {
 #import "CC3Foundation.h"	// extern must be first, since foundation also imported via other imports
 }
 
+#import "Cocos3dLayer.h"
 #import "Cocos3dScene.h"
 #import "CC3PODResourceNode.h"
 #import "CC3ActionInterval.h"
@@ -18,6 +19,7 @@ extern "C" {
 #import "CC3Light.h"
 #import <CC3Billboard.h>
 
+#import "CCScheduler.h"
 
 #import "CC3ControllableLayer.h"
 
@@ -122,6 +124,8 @@ enum {
 
     z = 0.0;
     
+    
+    
     screenSize = [CCDirector sharedDirector].winSize;
     previousTime = nil;
 
@@ -141,6 +145,7 @@ enum {
 //    [self addBillboard];
     
 //    [self addLabel];
+    
    
     /*
      * Add objects
@@ -286,6 +291,8 @@ enum {
 
     //	[[self getNodeNamed: kRobotTopArm] addChild: bb];
 }
+
+
 
 /**
  * By populating this method, you can add add additional scene content dynamically and
@@ -866,17 +873,17 @@ enum {
     [self addChild:earth];
     
    // Create the camera, place it back a bit, and add it to the world
-	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
-	cam.location = cc3v( 0.0, 0.0, 3.0 );
-	[earth addChild:cam];
+//	CC3Camera* cam = [CC3Camera nodeWithName: @"Camera"];
+//	cam.location = cc3v( 0.0, 0.0, 3.0 );
+//	[earth addChild:cam];
     
 
    // Create a light, place it back and to the left at a specific
 	// position (not just directional lighting), and add it to the world
-	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
-	lamp.location = cc3v( -2.0, 0.0, 3.0 );
-	lamp.isDirectionalOnly = NO;
-	[earth addChild: lamp];
+//	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+//	lamp.location = cc3v( -2.0, 0.0, 3.0 );
+//	lamp.isDirectionalOnly = NO;
+//	[earth addChild: lamp];
 
     
     //create earth body
@@ -1019,7 +1026,8 @@ enum {
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
     
-//    [self printLog];
+    [self printLog];
+    [self checkGameLogic];
 
 }
 
@@ -1410,7 +1418,7 @@ enum {
     //roll left-right(- +), pitch up-down(- +)
     //roll in x-direction, pitch in z-direction
 //    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
-    NSLog(@"z: %f", z);
+//    NSLog(@"z: %f", z);
     
     z += pitch/10;
     earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
@@ -1423,6 +1431,32 @@ enum {
     CC3Camera* activeCam = self.activeCamera;
     CC3Vector moveVector = cc3v(0, 0, earth.globalLocation.z/100);
     activeCam.location = CC3VectorAdd(activeCam.location, moveVector);
+}
+
+#pragma mark Game Logic
+- (void)checkGameLogic
+{
+    //earth fall out of the ground
+    if(earth.globalLocation.y < -20){
+        [self loseLife];
+        
+        //remove earth
+        [self removeChild:earth];
+        _world->DestroyBody(earthBody);
+        //recreate earth
+        [self addEarth];
+        self.activeCamera.target = earth;
+    }
+}
+
+- (void)resumeGame
+{
+    [self resumeAllActions];
+}
+
+- (void)loseLife
+{
+    [(Cocos3dLayer*)self.cc3Layer updateLabel];
 }
 
 @end

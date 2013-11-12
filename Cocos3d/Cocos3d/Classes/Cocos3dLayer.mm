@@ -35,11 +35,20 @@
 
 @property (nonatomic, retain) CMMotionManager *motionManager;
 
+//Game status
+@property (nonatomic) NSInteger life;
+@property (nonatomic) CCLabelTTF *lifeLabel;
+@property (nonatomic) NSString *lifeString;
+
 @end
 
 @implementation Cocos3dLayer
 
 @synthesize motionManager = _motionManager;
+
+@synthesize life = _life;
+@synthesize lifeLabel = _lifeLabel;
+@synthesize lifeString = _lifeString;
 
 -(void) dealloc {
     [super dealloc];
@@ -69,13 +78,67 @@
     [self addZoomButton];
     [self addLogButton];
     
+    
+    //Game status
+    CCLabelTTF *label = [[CCLabelTTF alloc] initWithString:@"test" fontName:@"Marker Felt" fontSize:18];
+    //TO-DO adjust according to winsize
+    label.position = CGPointMake(160, 500);
+    label.string = @"Race Earth Game";
+    [self addChild:label];
+    
+    CCLabelTTF *lifeTextLabel = [[CCLabelTTF alloc] initWithString:@"Life Left: " fontName:@"Marker Felt" fontSize:18];
+    lifeTextLabel.position = CGPointMake(130, 450);
+    [self addChild:lifeTextLabel];
+    
+    _life = 3;
+    _lifeLabel = [[CCLabelTTF alloc] initWithString:@"" fontName:@"Marker Felt" fontSize:18];
+    _lifeLabel.position = CGPointMake(200, 450);
+    
+    _lifeLabel.color = ccRED;
+    [self updateLifeString];
+    [self addChild:_lifeLabel];
+    
     //set up gyroscope
     [self initializeDeviceMotion];
 
 	[self scheduleUpdate];   // Schedule updates on each frame
 }
 
+#pragma mark label
+- (void)updateLabel
+{
+    _life--;
+    
 
+    
+    if (_life <= 0) {
+        [self gameFail];
+//        [self pauseSchedulerAndActions];
+        [self stopAllActions]; //Not working
+    }
+    
+    [self updateLifeString];
+
+}
+
+-(void)updateLifeString
+{
+    _lifeString = @"";
+    for(int i = 0; i < _life; i++){
+        _lifeString = [_lifeString stringByAppendingString:@"♥"];
+    }
+    _lifeLabel.string = _lifeString;
+}
+
+- (void)gameFail
+{
+    [self cocos3dScene].backdrop = [CC3ClipSpaceNode nodeWithColor: ccc4f(0, 0, 0, 1)];
+    
+    CCLabelTTF *label = [[CCLabelTTF alloc] initWithString:@"Game Over!" fontName:@"Marker Felt" fontSize:24];
+    label.color = ccRED;
+    label.position = CGPointMake(150, 300);
+    [self addChild:label];
+}
 
 #pragma mark Joystick
 
@@ -233,6 +296,10 @@
 	[self addChild: viewMenu];
 }
 
+-(void) cycleZoom: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene cycleZoom];
+}
+
 -(void) addLogButton {
 #define kLogButtonFileName				@"logPrintButton_32*32.png"
 
@@ -262,7 +329,6 @@
 	[self addChild: viewMenu];
 }
 
-/** The user has pressed the zoom button. Tell the 3D scene. */
 -(void) printLog: (CCMenuItemToggle*) svMI {
     [(Cocos3dScene*)self.cc3Scene printLog];
 }

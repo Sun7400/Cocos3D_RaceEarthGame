@@ -19,4 +19,6 @@
 	Joystick* locationJoystick;
 }
 
+- (void)updateLabel;
+
 @end
