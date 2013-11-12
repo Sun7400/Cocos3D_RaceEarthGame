@@ -54,13 +54,16 @@ enum {
 
 }
 
-@property (nonatomic) CC3MeshNode *earth;
+//Background setting
 @property (nonatomic) CC3MeshNode *ground;
+
+//Objects
+@property (nonatomic) CC3MeshNode *earth;
 @property (nonatomic) CC3MeshNode *test;
 
 @property (nonatomic) CC3BoxNode *cube;
 
-
+//Camera
 @property (nonatomic) CC3Node* cameraTarget;
 
 
@@ -68,17 +71,21 @@ enum {
 
 @implementation Cocos3dScene
 
-@synthesize playerDirectionControl=_playerDirectionControl;
-@synthesize playerLocationControl=_playerLocationControl;
-
-
-@synthesize earth;
+//background
 @synthesize ground;
+
+//objects
+@synthesize earth;
 @synthesize test;
 
 @synthesize cube;
 
-@synthesize cameraTarget;
+//joysticks
+@synthesize playerDirectionControl=_playerDirectionControl;
+@synthesize playerLocationControl=_playerLocationControl;
+
+//camera
+@synthesize cameraTarget = _cameraTarget;
 
 
 -(void) dealloc {
@@ -109,9 +116,10 @@ enum {
  *    font to a mesh results in a LOT of triangles. When adapting this template project for your own
  *    application, REMOVE the POD file 'hello-world.pod' from the Resources folder of your project.
  */
-#define kNoFadeIn						0.0f
 
 -(void) initializeScene {
+#define kNoFadeIn						0.0f
+
     z = 0.0;
     
     screenSize = [CCDirector sharedDirector].winSize;
@@ -126,29 +134,28 @@ enum {
     [self setWorld];
 
     /*
-     * Draw Backround & Ground
+     * Draw Backround & Ground & Billboard
      */
     [self addBackdrop];
     [self addGround];
+//    [self addBillboard];
     
 //    [self addLabel];
-    [self addBillboard];
    
     /*
      * Add objects
      */
-    
-    [self addTestPOD];
-//    [self addBall];
     [self addEarth];
-    [self drawCube];
+
+    
+//    [self addTestPOD];
+//    [self addBall];
+//    [self drawCube];
 
     
 //    [self addRobot];				// Add an animated robot arm, a light, and a camera. This POD file
     // contains the primary camera of this scene.
-
-//    [self drawMeshNode];
-    //    [self drawLine];
+//    [self drawLine];
 //    [self drawSphere];
     
     [self configureLighting];		// Set up the lighting
@@ -193,7 +200,7 @@ enum {
    
 
 //    [self  setCam];
-    [self.activeCamera moveToShowAllOf:ground withPadding:0.5];
+//    [self.activeCamera moveToShowAllOf:ground withPadding:0.5];
 
 }
 
@@ -655,7 +662,7 @@ enum {
     [ground setTexture:[CC3Texture textureFromFile: kGroundTextureFile]];
     [ground repeatTexture: (ccTex2F){10, 10}];	// Grass
 
-    ground.location = cc3v(0.0, -14.0, 0.0);
+    ground.location = cc3v(0.0, -14.0, -50.0);
     ground.rotation = cc3v(-90.0, 180.0, 0.0);
     ground.shouldCullBackFaces = YES;
     [ground retainVertexLocations];
@@ -1012,11 +1019,11 @@ enum {
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
     
-    [self printLocation];
+//    [self printLog];
 
 }
 
-- (void)printLocation
+- (void)printLog
 {
     CC3Vector activeCamLoc = self.activeCamera.globalLocation;
     NSLog(@"Active camera: x:%f y:%f z:%f", activeCamLoc.x, activeCamLoc.y, activeCamLoc.z);
@@ -1094,7 +1101,7 @@ enum {
     }
     
     for (b2Contact* contact = _world->GetContactList(); contact; contact = contact->GetNext()){
-        NSLog(@"Contact!");
+//        NSLog(@"Contact!");
         
         b2Body *a = contact->GetFixtureA()->GetBody();
         b2Body *b = contact->GetFixtureB()->GetBody();
@@ -1161,7 +1168,7 @@ enum {
         
 		// Get the X-Y delta value of the control and scale it to something suitable
 		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
-        double factor = 30;
+        double factor = 10;
 //        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
         
 		// We want to move the camera forward and backward, and side-to-side,
@@ -1203,17 +1210,18 @@ enum {
  * is handled by a CCActionInterval, so that the movement appears smooth and animated.
  */
 -(void) switchCameraTarget {
-    if (cameraTarget == ground) {
-        cameraTarget = test;
+    if (_cameraTarget == ground) {
+        _cameraTarget = earth;
     }else{
-        cameraTarget = ground;
+        _cameraTarget = ground;
 	}
     
 	CC3Camera* cam = self.activeCamera;
 	cam.target = nil;			// Ensure the camera is not locked to the original target
 	[cam stopAllActions];
-	[cam runAction: [CC3RotateToLookAt actionWithDuration: 2.0 targetLocation: cameraTarget.globalLocation]];
-	LogInfo(@"Camera target toggled to %@", cameraTarget);
+	[cam runAction: [CC3RotateToLookAt actionWithDuration: 2.0 targetLocation: _cameraTarget.globalLocation]];
+    NSLog(@"Cam x:%f y:%f z:%f \nTarget: x:%f y:%f z:%f", cam.globalLocation.x, cam.globalLocation.y, cam.globalLocation.z, _camTarget.globalLocation.x, _camTarget.globalLocation.y, _camTarget.globalLocation.z);
+	LogInfo(@"Camera target toggled to %@", _cameraTarget);
 }
 
 

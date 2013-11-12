@@ -13,18 +13,24 @@
 
 
 /** Parameters for setting up the joystick and button controls */
-#define kJoystickThumbFileName			@"JoystickThumb.png"
+#define kJoystickLeftFileName			@"joystickLeft_32*32.png"
+#define kJoystickRightFileName			@"joystickRight_32*32.png"
 #define kJoystickSideLength				80.0
 #define kJoystickPadding				8.0
 
+//Button variable
+#define kButtonShineFileName			@"Shine48x48.png"
+#define kPeakShineOpacity				180
 
 @interface Cocos3dLayer()
 {
     AdornableMenuItemImage* switchViewMI;
-    AdornableMenuItemImage* shadowMI;
-	AdornableMenuItemImage* zoomMI;
-	AdornableMenuItemImage* invasionMI;
-	AdornableMenuItemImage* sunlightMI;
+    AdornableMenuItemImage* zoomMI;
+    AdornableMenuItemImage* logMI;
+    
+//    AdornableMenuItemImage* shadowMI;
+//	AdornableMenuItemImage* invasionMI;
+//	AdornableMenuItemImage* sunlightMI;
 }
 
 @property (nonatomic, retain) CMMotionManager *motionManager;
@@ -61,6 +67,7 @@
 	[self addJoysticks];
     [self addSwitchViewButton];
     [self addZoomButton];
+    [self addLogButton];
     
     //set up gyroscope
     [self initializeDeviceMotion];
@@ -70,7 +77,7 @@
 
 
 
-
+#pragma mark Joystick
 
 /** Creates the two joysticks that control the 3D camera direction and location. */
 -(void) addJoysticks {
@@ -81,7 +88,7 @@
 	GLfloat thumbScale = CC_CONTENT_SCALE_FACTOR();
     
 	// The joystick that controls the player's (camera's) direction
-	jsThumb = [CCSprite spriteWithFile: kJoystickThumbFileName];
+	jsThumb = [CCSprite spriteWithFile: kJoystickLeftFileName];
 	jsThumb.scale = thumbScale;
 
 	directionJoystick = [Joystick joystickWithThumb: jsThumb
@@ -100,7 +107,7 @@
 	[self addChild: directionJoystick];
 	
 	// The joystick that controls the player's (camera's) location
-	jsThumb = [CCSprite spriteWithFile: kJoystickThumbFileName];
+	jsThumb = [CCSprite spriteWithFile: kJoystickRightFileName];
 	jsThumb.scale = thumbScale;
 	
 	locationJoystick = [Joystick joystickWithThumb: jsThumb
@@ -140,12 +147,14 @@
     
 }
 
+#pragma mark Buttons
+
 /**
  * Creates a button (actually a single-item menu) in the bottom center of the layer that will
  * allow the user to switch between four different views of the 3D scene.
  */
 -(void) addSwitchViewButton {
-#define kSwitchViewButtonFileName		@"ArrowLeftButton48x48.png"
+#define kSwitchViewButtonFileName		@"switchButton_32*32.png"
 #define kButtonRingFileName				@"ButtonRing48x48.png"
 
 	// Set up the menu item and position it in the bottom center of the layer
@@ -188,7 +197,7 @@
 
 /** The user has pressed the switch camera view button. Tell the 3D scene so it can move the camera. */
 -(void) switchViewSelected: (CCMenuItemToggle*) svMI {
-	[self.cc3Scene switchCameraTarget];
+	[(Cocos3dScene*)self.cc3Scene switchCameraTarget];
 }
 
 /**
@@ -197,9 +206,7 @@
  * from the previous position.
  */
 -(void) addZoomButton {
-#define kZoomButtonFileName				@"ZoomButton48x48.png"
-#define kButtonShineFileName			@"Shine48x48.png"
-#define kPeakShineOpacity				180
+#define kZoomButtonFileName				@"zoomButton_32*32.png"
 
 	// Set up the menu item and position it in the bottom center of the layer
 	zoomMI = [AdornableMenuItemImage itemWithNormalImage: kZoomButtonFileName
@@ -226,8 +233,39 @@
 	[self addChild: viewMenu];
 }
 
+-(void) addLogButton {
+#define kLogButtonFileName				@"logPrintButton_32*32.png"
+
+    
+	// Set up the menu item and position it in the bottom center of the layer
+	logMI = [AdornableMenuItemImage itemWithNormalImage: kLogButtonFileName
+										   selectedImage: kLogButtonFileName
+												  target: self
+												selector: @selector(printLog:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu
+	// item uses a shine adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+    
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonShineFileName];
+	shineSprite.color = ccWHITE;
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+															peakOpacity: kPeakShineOpacity];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(logMI.contentSize), logMI.anchorPoint);
+	logMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: logMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
 /** The user has pressed the zoom button. Tell the 3D scene. */
--(void) cycleZoom: (CCMenuItemToggle*) svMI { [self.cc3Scene cycleZoom]; }
+-(void) printLog: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene printLog];
+}
 
 /**
  * Positions the buttons between the two joysticks.
@@ -235,18 +273,19 @@
  * to keep the button in the correct location within the new layer dimensions.
  */
 -(void) positionButtons {
-#define kButtonGrid						40.0
+#define kButtonGrid						50.0
     
 	GLfloat middle = self.contentSize.width / 2.0;
 	GLfloat btnY = (kJoystickPadding * 0.5) + (kButtonGrid * 0.5);
     
-	shadowMI.position = ccp(middle - (kButtonGrid * 0.5), btnY);
+	switchViewMI.position = ccp(middle - (kButtonGrid * 0.5), btnY);
+    logMI.position = ccp(middle, btnY);
 	zoomMI.position = ccp(middle + (kButtonGrid * 0.5), btnY);
     
 	btnY += kButtonGrid;
-	switchViewMI.position = ccp(middle - (kButtonGrid * 1.0), btnY);
-	invasionMI.position = ccp(middle, btnY);
-	sunlightMI.position = ccp(middle + (kButtonGrid * 1.0), btnY);
+//	switchViewMI.position = ccp(middle - (kButtonGrid * 1.0), btnY);
+//	invasionMI.position = ccp(middle, btnY);
+//	sunlightMI.position = ccp(middle + (kButtonGrid * 1.0), btnY);
 }
 
 
