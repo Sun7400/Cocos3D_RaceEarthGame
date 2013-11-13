@@ -89,11 +89,6 @@ enum {
 //camera
 @synthesize cameraTarget = _cameraTarget;
 
-
--(void) dealloc {
-	[super dealloc];
-}
-
 #pragma mark Init process
 
 /**
@@ -120,11 +115,9 @@ enum {
  */
 
 -(void) initializeScene {
-#define kNoFadeIn						0.0f
+    static const double kNoFadeIn = 0.0f;
 
     z = 0.0;
-    
-    
     
     screenSize = [CCDirector sharedDirector].winSize;
     previousTime = nil;
@@ -643,8 +636,8 @@ enum {
  * See the notes for the backdrop property for more info.
  */
 -(void) addBackdrop {
-#define kSkyColor						ccc4f(0.4, 0.5, 0.9, 1.0)
-#define kBrickTextureFile				@"Bricks-Red.jpg"
+    static const ccColor4F kSkyColor = ccc4f(0.4, 0.5, 0.9, 1.0);
+//    static NSString *const kBrickTextureFile = @"Bricks-Red.jpg";
 
 //	if (self.cc3Layer.isOverlayingDeviceCamera) return;
 	self.backdrop = [CC3ClipSpaceNode nodeWithColor: kSkyColor];
@@ -658,18 +651,22 @@ enum {
 
 - (void)addGround
 {
-#define kGroundName						@"Ground"
-#define kGroundTextureFile				@"grass2.jpg"
+    static NSString *const kGroundName = @"Ground";
+    static NSString *const kGroundTextureFile = @"grass2.jpg";
+
     double width = 20;
     double length = 100;
-    ground = [CC3PlaneNode nodeWithName:@"Ground"];
+    
+    /*
+     Define Cocos3d Object
+     */
+    
+    ground = [CC3PlaneNode nodeWithName:kGroundName];
     [ground populateAsRectangleWithSize:CGSizeMake(width, length) andRelativeOrigin:CGPointMake(0.0, 0.0)];
-
-//    ground.color = ccBLUE;
     [ground setTexture:[CC3Texture textureFromFile: kGroundTextureFile]];
     [ground repeatTexture: (ccTex2F){10, 10}];	// Grass
 
-    ground.location = cc3v(0.0, -14.0, -50.0);
+    ground.location = cc3v(0.0, -14.0, -50.0); //hardcode to adjust earth
     ground.rotation = cc3v(-90.0, 180.0, 0.0);
     ground.shouldCullBackFaces = YES;
     [ground retainVertexLocations];
@@ -686,37 +683,16 @@ enum {
 	[ground addChild: lamp];
     
     /*
-    //create earth body
-    b2BodyDef groundBodyDef;
-    groundBodyDef.type = b2_dynamicBody;
-    //    earthBodyDef.position.Set(0.0, 0.0);
-    groundBodyDef.position.Set(100/PTM_RATIO, 400/PTM_RATIO);
-    groundBodyDef.userData = ground;
-    groundBodyDef.linearVelocity = b2Vec2(0.0f, 0.0f);
-    groundBody = _world->CreateBody(&groundBodyDef);
-    
-    // Create plane shape
-    b2Vec2 vertices[4];
-    vertices[0].Set(0.0f, 0.0f);
-    vertices[1].Set(20.0f, 0.0f);
-    vertices[2].Set(2.0f, 20.0f);
-    vertices[3].Set(0.0f, 20.0f);
-    int32 count = 4;
-    b2PolygonShape polygon;
-    polygon.Set(vertices, count);
-    
-    
-    // Create shape definition and add to body
-    b2FixtureDef groundShapeDef;
-    groundShapeDef.shape = &polygon;
-    groundShapeDef.density = 0.0f;
-    groundShapeDef.restitution = 0.35f;
-    groundShapeDef.isSensor = FALSE;
-    b2Fixture *groundFixture = groundBody->CreateFixture(&groundShapeDef);
+     Define Box2D Physics
      */
     
     // Define the ground body.
     b2BodyDef groundBodyDef;
+    
+    //init point - earth (-9, -6) earthBody (5, 14)
+    // Left edge          (-45, -20)        (-18, 6.85)
+    // Right edge          (13, -20)        (19, 4)
+    // wdith/4 = +/-5
     groundBodyDef.position.Set(0, 0);
     
     // The body is also added to the world.
@@ -728,21 +704,22 @@ enum {
 
     
     // bottom
-    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(width,0));
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(5,0)); //hardcode according to the left/right edge above
     groundBody->CreateFixture(&groundBox,0);
     
+    /*
     // right
-//    groundBox.SetAsEdge(b2Vec2(width,0), b2Vec2(width,length));
-//    groundBody->CreateFixture(&groundBox,0);
-//    
-//    // top
-//    groundBox.SetAsEdge(b2Vec2(width,length), b2Vec2(-width,length));
-//    groundBody->CreateFixture(&groundBox,0);
-//    
-//    // left
-//    groundBox.SetAsEdge(b2Vec2(-width,length), b2Vec2(-width,0));
-//    groundBody->CreateFixture(&groundBox,0);
+    groundBox.SetAsEdge(b2Vec2(width,0), b2Vec2(width,length));
+    groundBody->CreateFixture(&groundBox,0);
     
+    // top
+    groundBox.SetAsEdge(b2Vec2(width,length), b2Vec2(-width,length));
+    groundBody->CreateFixture(&groundBox,0);
+    
+    // left
+    groundBox.SetAsEdge(b2Vec2(-width,length), b2Vec2(-width,0));
+    groundBody->CreateFixture(&groundBox,0);
+    */
 
 }
 
@@ -788,10 +765,6 @@ enum {
 	[podRezNode runAction: [CCRepeatForever actionWithAction: [CCSequence actionOne: pirouette
 																				two: takeABow]]];
 }
-
-
-
-
 
 - (void)addBall
 {
@@ -1026,7 +999,7 @@ enum {
     b2Vec2 gravity = b2Vec2(0.0f, -9.8f);
     _world->SetGravity(gravity);
     
-    [self printLog];
+//    [self printLog];
     [self checkGameLogic];
 
 }
@@ -1165,17 +1138,18 @@ enum {
 
 /** Update the location and direction of looking of the 3D camera */
 -(void) updateCameraFromControls: (ccTime) dt {
+    static const double kLOCATION_CONTROL_SPEED = 5.0;
+    static const double kDIRECTION_CONTROL_SPEED = 10.0;
+    
 	CC3Camera* cam = self.activeCamera;
-	
-#define LOCATION_CONTROL_SPEED 5
-#define DIRECTION_CONTROL_SPEED 10
+
 	// Update the location of the player (the camera)
     // Right buttom
 	if ( _playerLocationControl.x || _playerLocationControl.y ) {
 //		NSLog(@"Player Location Control");
         
 		// Get the X-Y delta value of the control and scale it to something suitable
-		CGPoint delta = ccpMult(_playerLocationControl, dt * LOCATION_CONTROL_SPEED);
+		CGPoint delta = ccpMult(_playerLocationControl, dt * kLOCATION_CONTROL_SPEED);
         double factor = 10;
 //        NSLog(@"Delta x:%f y:%f", delta.x, delta.y);
         
@@ -1199,7 +1173,7 @@ enum {
 	if ( _playerDirectionControl.x || _playerDirectionControl.y ) {
         NSLog(@"Player Direction Control");
         
-		CGPoint delta = ccpMult(_playerDirectionControl, dt * DIRECTION_CONTROL_SPEED);		// Factor to set speed of rotation.
+		CGPoint delta = ccpMult(_playerDirectionControl, dt * kDIRECTION_CONTROL_SPEED);		// Factor to set speed of rotation.
         
         //Camera rotation
 		CC3Vector camRot = cam.rotation;
@@ -1238,7 +1212,7 @@ enum {
  * When the full scene is showing, a wireframe is drawn so we can easily see its extent.
  */
 -(void) cycleZoom {
-#define kCameraMoveDuration				3.0
+    static const double kCameraMoveDuration = 3.0;
 
 	CC3Camera* cam = self.activeCamera;
 	[cam stopAllActions];						// Stop any current camera motion
@@ -1390,7 +1364,7 @@ enum {
 -(void) touchEvent: (uint) touchType at: (CGPoint) touchPoint {
 
 	//Add a new body/atlas sprite at the touched location
-	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
+//	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
     
     //touch to make racecar jump in +y direction
     earthBody->ApplyForce(b2Vec2(0, 200), earthBody->GetLocalCenter());
@@ -1410,7 +1384,7 @@ enum {
  */
 -(void) nodeSelected: (CC3Node*) aNode byTouchEvent: (uint) touchType at: (CGPoint) touchPoint {
 //    NSLog(@"touch!");
-    NSLog(@"Node Selected: %@", aNode.name);
+//    NSLog(@"Node Selected: %@", aNode.name);
 }
 
 - (void)gyroscope : (double)roll andPitch:(double)pitch andYaw:(double)yaw
@@ -1438,6 +1412,7 @@ enum {
 {
     //earth fall out of the ground
     if(earth.globalLocation.y < -20){
+        [self printLog];
         [self loseLife];
         
         //remove earth
