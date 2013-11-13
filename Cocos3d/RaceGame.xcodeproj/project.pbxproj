@@ -24,6 +24,9 @@
 		4C04A56A18328914008C4930 /* joystickLeft_32*32.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A56818328914008C4930 /* joystickLeft_32*32.png */; };
 		4C04A56B18328914008C4930 /* joystickRight_32*32.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04A56918328914008C4930 /* joystickRight_32*32.png */; };
 		4C1E38B81833F86A00EDBD79 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C1E38B71833F86A00EDBD79 /* Images.xcassets */; };
+		4C1E38BE183403F300EDBD79 /* cameraButton_48*48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C1E38BB183403F300EDBD79 /* cameraButton_48*48.png */; };
+		4C1E38BF183403F300EDBD79 /* lightButton_48*48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C1E38BC183403F300EDBD79 /* lightButton_48*48.png */; };
+		4C1E38C0183403F300EDBD79 /* sunButton_48*48.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C1E38BD183403F300EDBD79 /* sunButton_48*48.png */; };
 		4C207FE3182C55F8005B1335 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C207FE2182C55F8005B1335 /* CoreMotion.framework */; };
 		4C207FE5182D41FF005B1335 /* Untitled.pod in Resources */ = {isa = PBXBuildFile; fileRef = 4C207FE4182D41FF005B1335 /* Untitled.pod */; };
 		4C207FEF182D59F5005B1335 /* spotlight.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 4C207FED182D59F5005B1335 /* spotlight.fsh */; };
@@ -402,6 +405,9 @@
 		4C04A56818328914008C4930 /* joystickLeft_32*32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "joystickLeft_32*32.png"; path = "Resources/joystickLeft_32*32.png"; sourceTree = "<group>"; };
 		4C04A56918328914008C4930 /* joystickRight_32*32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "joystickRight_32*32.png"; path = "Resources/joystickRight_32*32.png"; sourceTree = "<group>"; };
 		4C1E38B71833F86A00EDBD79 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ../RaceGame/Images.xcassets; sourceTree = "<group>"; };
+		4C1E38BB183403F300EDBD79 /* cameraButton_48*48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "cameraButton_48*48.png"; path = "Resources/cameraButton_48*48.png"; sourceTree = "<group>"; };
+		4C1E38BC183403F300EDBD79 /* lightButton_48*48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "lightButton_48*48.png"; path = "Resources/lightButton_48*48.png"; sourceTree = "<group>"; };
+		4C1E38BD183403F300EDBD79 /* sunButton_48*48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "sunButton_48*48.png"; path = "Resources/sunButton_48*48.png"; sourceTree = "<group>"; };
 		4C207FE2182C55F8005B1335 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		4C207FE4182D41FF005B1335 /* Untitled.pod */ = {isa = PBXFileReference; lastKnownFileType = file; path = Untitled.pod; sourceTree = "<group>"; };
 		4C207FED182D59F5005B1335 /* spotlight.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = spotlight.fsh; sourceTree = "<group>"; };
@@ -1120,6 +1126,25 @@
 				4C2E77681826CF170072F6F0 /* Controls */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		4C1E38BA183403D900EDBD79 /* button */ = {
+			isa = PBXGroup;
+			children = (
+				4C1E38BB183403F300EDBD79 /* cameraButton_48*48.png */,
+				4C1E38BC183403F300EDBD79 /* lightButton_48*48.png */,
+				4C1E38BD183403F300EDBD79 /* sunButton_48*48.png */,
+				4C04A56818328914008C4930 /* joystickLeft_32*32.png */,
+				4C04A56918328914008C4930 /* joystickRight_32*32.png */,
+				4C04A5661832882E008C4930 /* switchButton_32*32.png */,
+				4C04A5641832874A008C4930 /* zoomButton_32*32.png */,
+				4C04A5291832863D008C4930 /* logPrintButton_32*32.png */,
+				4C04A5231832841D008C4930 /* logPrintButton_48*48.png */,
+				4C04A5241832841D008C4930 /* switchButton_48*48.png */,
+				4C04A5251832841D008C4930 /* zoomButton_48*48.png */,
+				4C04A51E1831B028008C4930 /* ZoomButton48x48.png */,
+			);
+			name = button;
 			sourceTree = "<group>";
 		};
 		4C207FE6182D56F7005B1335 /* Shader */ = {
@@ -2070,17 +2095,9 @@
 		4C2E714B18231D420072F6F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C1E38BA183403D900EDBD79 /* button */,
 				4C207FE6182D56F7005B1335 /* Shader */,
 				4C2E75E71823459E0072F6F0 /* asset */,
-				4C04A56818328914008C4930 /* joystickLeft_32*32.png */,
-				4C04A56918328914008C4930 /* joystickRight_32*32.png */,
-				4C04A5661832882E008C4930 /* switchButton_32*32.png */,
-				4C04A5641832874A008C4930 /* zoomButton_32*32.png */,
-				4C04A5291832863D008C4930 /* logPrintButton_32*32.png */,
-				4C04A5231832841D008C4930 /* logPrintButton_48*48.png */,
-				4C04A5241832841D008C4930 /* switchButton_48*48.png */,
-				4C04A5251832841D008C4930 /* zoomButton_48*48.png */,
-				4C04A51E1831B028008C4930 /* ZoomButton48x48.png */,
 				4C04A51C1831B01D008C4930 /* Shine48x48.png */,
 				4C04A51A18319D30008C4930 /* grass2.jpg */,
 				4C04A51818319B5E008C4930 /* green-grass-texture.jpg */,
@@ -2363,10 +2380,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C2E714718231D420072F6F0 /* CC3SingleTextureReflectAlphaTest.fsh in Resources */,
+				4C1E38C0183403F300EDBD79 /* sunButton_48*48.png in Resources */,
 				4C2E712918231D410072F6F0 /* CC3ClipSpaceSingleTexture.fsh in Resources */,
 				4C04A51B18319D30008C4930 /* grass2.jpg in Resources */,
 				4C2E711F18231D410072F6F0 /* CC3BumpMapObjectSpace.fsh in Resources */,
 				4C2E718518231D420072F6F0 /* fps_images-hd.png in Resources */,
+				4C1E38BF183403F300EDBD79 /* lightButton_48*48.png in Resources */,
 				4C2E712318231D410072F6F0 /* CC3BumpMapTangentSpace.fsh in Resources */,
 				4C2E715918231D420072F6F0 /* Icon-50@2x.png in Resources */,
 				4C2E716918231D420072F6F0 /* Icon-76@2x.png in Resources */,
@@ -2420,6 +2439,7 @@
 				4C2E718118231D420072F6F0 /* hello-world.pod in Resources */,
 				4C2E715F18231D420072F6F0 /* Icon-60.png in Resources */,
 				4C2E712718231D410072F6F0 /* CC3ClipSpaceNoTexture.fsh in Resources */,
+				4C1E38BE183403F300EDBD79 /* cameraButton_48*48.png in Resources */,
 				4C04A51718319791008C4930 /* Bricks-Red.jpg in Resources */,
 				4C2E77241823EFE30072F6F0 /* Balls.pod in Resources */,
 				4C04A51F1831B028008C4930 /* ZoomButton48x48.png in Resources */,

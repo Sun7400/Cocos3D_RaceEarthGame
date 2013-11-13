@@ -19,18 +19,23 @@
 #define kJoystickPadding				8.0
 
 //Button variable
-#define kButtonShineFileName			@"Shine48x48.png"
+static NSString *const kButtonShineFileName	= @"Shine48x48.png";
+static NSString *const kButtonRingFileName = @"ButtonRing48x48.png";
 #define kPeakShineOpacity				180
 
 @interface Cocos3dLayer()
 {
-    AdornableMenuItemImage* switchViewMI;
-    AdornableMenuItemImage* zoomMI;
-    AdornableMenuItemImage* logMI;
+    //light related
+    AdornableMenuItemImage* sunMI; //simulate day/night
+    AdornableMenuItemImage* lightMI;
     
-//    AdornableMenuItemImage* shadowMI;
-//	AdornableMenuItemImage* invasionMI;
-//	AdornableMenuItemImage* sunlightMI;
+    //camera realted
+    AdornableMenuItemImage* switchViewMI; //switch view betweeen object
+    AdornableMenuItemImage* zoomMI; // zoom in/out
+    AdornableMenuItemImage* cameraMI; // change camera position
+
+    //debug
+    AdornableMenuItemImage* logMI;
 }
 
 @property (nonatomic, retain) CMMotionManager *motionManager;
@@ -73,9 +78,13 @@
 	self.touchEnabled = YES;
     self.mouseEnabled = YES;	// Under OSX, use mouse events since gestures are not supported.
     
+    //Add control & buttons
 	[self addJoysticks];
+    [self addSunButton];
+    [self addLightButton];
     [self addSwitchViewButton];
     [self addZoomButton];
+    [self addCameraButton];
     [self addLogButton];
     
     
@@ -217,8 +226,8 @@
  * allow the user to switch between four different views of the 3D scene.
  */
 -(void) addSwitchViewButton {
-#define kSwitchViewButtonFileName		@"switchButton_32*32.png"
-#define kButtonRingFileName				@"ButtonRing48x48.png"
+static NSString *const kSwitchViewButtonFileName = @"switchButton_48*48.png";
+
 
 	// Set up the menu item and position it in the bottom center of the layer
 	switchViewMI = [AdornableMenuItemImage itemWithNormalImage: kSwitchViewButtonFileName
@@ -233,7 +242,7 @@
 	
 	// The adornment is a ring that fades in around the menu item and then fades out when
 	// the menu item is no longer selected.
-	CCSprite* ringSprite = [CCSprite spriteWithFile: kButtonRingFileName];
+	CCSprite* ringSprite = [CCSprite spriteWithFile: kButtonShineFileName];
 	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: ringSprite];
 	adornment.zOrder = kAdornmentUnderZOrder;
 	
@@ -263,13 +272,46 @@
 	[(Cocos3dScene*)self.cc3Scene switchCameraTarget];
 }
 
+-(void) addLogButton {
+static NSString *const kLogButtonFileName = @"logPrintButton_48*48.png";
+    
+    
+	// Set up the menu item and position it in the bottom center of the layer
+	logMI = [AdornableMenuItemImage itemWithNormalImage: kLogButtonFileName
+                                          selectedImage: kLogButtonFileName
+                                                 target: self
+                                               selector: @selector(printLog:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu
+	// item uses a shine adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+    
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonShineFileName];
+	shineSprite.color = ccWHITE;
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+															peakOpacity: kPeakShineOpacity];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(logMI.contentSize), logMI.anchorPoint);
+	logMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: logMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
+-(void) printLog: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene printLog];
+}
+
 /**
  * Creates a button (actually a single-item menu) in the bottom center of the layer
  * that will allow the user to move between viewing the whole scene and viewing
  * from the previous position.
  */
 -(void) addZoomButton {
-#define kZoomButtonFileName				@"zoomButton_32*32.png"
+static NSString *const kZoomButtonFileName = @"zoomButton_48*48.png";
 
 	// Set up the menu item and position it in the bottom center of the layer
 	zoomMI = [AdornableMenuItemImage itemWithNormalImage: kZoomButtonFileName
@@ -300,36 +342,104 @@
     [(Cocos3dScene*)self.cc3Scene cycleZoom];
 }
 
--(void) addLogButton {
-#define kLogButtonFileName				@"logPrintButton_32*32.png"
 
+
+-(void) addLightButton {
+static NSString *const kLightButtonFileName = @"lightButton_48*48.png";
+    
     
 	// Set up the menu item and position it in the bottom center of the layer
-	logMI = [AdornableMenuItemImage itemWithNormalImage: kLogButtonFileName
-										   selectedImage: kLogButtonFileName
-												  target: self
-												selector: @selector(printLog:)];
+	lightMI = [AdornableMenuItemImage itemWithNormalImage: kLightButtonFileName
+                                          selectedImage: kLightButtonFileName
+                                                 target: self
+                                               selector: @selector(changeLight:)];
 	[self positionButtons];
 	
 	// Instead of having different normal and selected images, the toggle menu
 	// item uses a shine adornment, which is displayed whenever an item is selected.
 	CCNodeAdornmentBase* adornment;
     
-	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonShineFileName];
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonRingFileName];
 	shineSprite.color = ccWHITE;
 	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
 															peakOpacity: kPeakShineOpacity];
 	
 	// Attach the adornment to the menu item and center it on the menu item
-	adornment.position = ccpCompMult(ccpFromSize(logMI.contentSize), logMI.anchorPoint);
-	logMI.adornment = adornment;
+	adornment.position = ccpCompMult(ccpFromSize(lightMI.contentSize), lightMI.anchorPoint);
+	lightMI.adornment = adornment;
 	
-	CCMenu* viewMenu = [CCMenu menuWithItems: logMI, nil];
+	CCMenu* viewMenu = [CCMenu menuWithItems: lightMI, nil];
 	viewMenu.position = CGPointZero;
 	[self addChild: viewMenu];
 }
 
--(void) printLog: (CCMenuItemToggle*) svMI {
+-(void) changeLight: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene printLog];
+}
+
+-(void) addCameraButton {
+static NSString *const kCameraButtonFileName = @"cameraButton_48*48.png";
+    
+    
+	// Set up the menu item and position it in the bottom center of the layer
+	cameraMI = [AdornableMenuItemImage itemWithNormalImage: kCameraButtonFileName
+                                            selectedImage: kCameraButtonFileName
+                                                   target: self
+                                                 selector: @selector(changeCamera:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu
+	// item uses a shine adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+    
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonRingFileName];
+	shineSprite.color = ccWHITE;
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+															peakOpacity: kPeakShineOpacity];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(cameraMI.contentSize), cameraMI.anchorPoint);
+	cameraMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: cameraMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
+-(void) changeCamera: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene printLog];
+}
+
+-(void) addSunButton {
+static NSString *const kSunButtonFileName = @"sunButton_48*48.png";
+    
+    
+	// Set up the menu item and position it in the bottom center of the layer
+	sunMI = [AdornableMenuItemImage itemWithNormalImage: kSunButtonFileName
+                                            selectedImage: kSunButtonFileName
+                                                   target: self
+                                                 selector: @selector(changeSun:)];
+	[self positionButtons];
+	
+	// Instead of having different normal and selected images, the toggle menu
+	// item uses a shine adornment, which is displayed whenever an item is selected.
+	CCNodeAdornmentBase* adornment;
+    
+	CCSprite* shineSprite = [CCSprite spriteWithFile: kButtonRingFileName];
+	shineSprite.color = ccWHITE;
+	adornment = [CCNodeAdornmentOverlayFader adornmentWithAdornmentNode: shineSprite
+															peakOpacity: kPeakShineOpacity];
+	
+	// Attach the adornment to the menu item and center it on the menu item
+	adornment.position = ccpCompMult(ccpFromSize(sunMI.contentSize), sunMI.anchorPoint);
+	sunMI.adornment = adornment;
+	
+	CCMenu* viewMenu = [CCMenu menuWithItems: sunMI, nil];
+	viewMenu.position = CGPointZero;
+	[self addChild: viewMenu];
+}
+
+-(void) changeSun: (CCMenuItemToggle*) svMI {
     [(Cocos3dScene*)self.cc3Scene printLog];
 }
 
@@ -339,22 +449,21 @@
  * to keep the button in the correct location within the new layer dimensions.
  */
 -(void) positionButtons {
-#define kButtonGrid						50.0
+    static const double kButtonGrid = 50.0;
     
 	GLfloat middle = self.contentSize.width / 2.0;
 	GLfloat btnY = (kJoystickPadding * 0.5) + (kButtonGrid * 0.5);
     
-	switchViewMI.position = ccp(middle - (kButtonGrid * 0.5), btnY);
-    logMI.position = ccp(middle, btnY);
-	zoomMI.position = ccp(middle + (kButtonGrid * 0.5), btnY);
+	switchViewMI.position = ccp(middle - (kButtonGrid * 1), btnY);
+    cameraMI.position = ccp(middle, btnY);
+	zoomMI.position = ccp(middle + (kButtonGrid * 1), btnY);
     
 	btnY += kButtonGrid;
-//	switchViewMI.position = ccp(middle - (kButtonGrid * 1.0), btnY);
-//	invasionMI.position = ccp(middle, btnY);
-//	sunlightMI.position = ccp(middle + (kButtonGrid * 1.0), btnY);
+	lightMI.position = ccp(middle - (kButtonGrid * 1), btnY);
+	sunMI.position = ccp(middle, btnY);
+    
+	logMI.position = ccp(middle + (kButtonGrid * 1), btnY);
 }
-
-
 
 
 #pragma mark Updating layer
