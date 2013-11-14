@@ -26,7 +26,6 @@ static double kPeakShineOpacity = 180;
 @interface Cocos3dLayer()
 {
     //light related
-    // TODO: Implement it
     AdornableMenuItemImage* sunMI; //simulate day/night
     // TODO: Implement it
     AdornableMenuItemImage* lightMI;
@@ -377,7 +376,7 @@ static NSString *const kLightButtonFileName = @"lightButton_48*48.png";
 }
 
 -(void) changeLight: (CCMenuItemToggle*) svMI {
-    [(Cocos3dScene*)self.cc3Scene printLog];
+    [(Cocos3dScene*)self.cc3Scene changeLight];
 }
 
 -(void) addCameraButton {
@@ -443,7 +442,7 @@ static NSString *const kSunButtonFileName = @"sunButton_48*48.png";
 }
 
 -(void) changeSun: (CCMenuItemToggle*) svMI {
-    [(Cocos3dScene*)self.cc3Scene printLog];
+    [(Cocos3dScene*)self.cc3Scene changeEnvironmentLight];
 }
 
 /**

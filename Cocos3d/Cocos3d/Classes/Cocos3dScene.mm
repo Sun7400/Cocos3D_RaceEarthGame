@@ -37,6 +37,8 @@ enum {
 	kTagParentNode = 1,
 };
 
+static const ccColor4F kSkyColor = ccc4f(0.4, 0.5, 0.9, 1.0);
+static const ccColor4F kNightColor = ccc4f(0.0, 0.0, 0.0, 1.0);
 static const double kCameraMoveDuration = 3.0;
 
 @interface Cocos3dScene ()
@@ -633,7 +635,6 @@ static const double kCameraMoveDuration = 3.0;
  * See the notes for the backdrop property for more info.
  */
 -(void) addBackdrop {
-    static const ccColor4F kSkyColor = ccc4f(0.4, 0.5, 0.9, 1.0);
 //    static NSString *const kBrickTextureFile = @"Bricks-Red.jpg";
 
 //	if (self.cc3Layer.isOverlayingDeviceCamera) return;
@@ -1018,6 +1019,33 @@ static const double kCameraMoveDuration = 3.0;
 //    NSLog(@"Cube x:%f y:%f z:%f", cube.globalLocation.x, cube.globalLocation.y, cube.globalLocation.z);
 //    NSLog(@"CubeBody x:%f y:%f", cubeBody->GetPosition().x, cubeBody->GetPosition().y);
 
+}
+
+//change background light
+- (void)changeEnvironmentLight
+{
+//    CC3TintTo * night = [CC3TintDiffuseTo actionWithDuration:1.8 colorTo:kNightColor];
+//    CC3TintTo * day = [CC3TintDiffuseTo actionWithDuration:1.8 colorTo:kSkyColor];
+//    CCActionInterval* changeLight = [CCSequence actionOne: night two: day];
+    
+//    self.backdrop = [CC3ClipSpaceNode nodeWithColor: kNightColor];
+//    [self.backdrop runAction: [CCRepeatForever actionWithAction:changeLight]];
+//    [self.backdrop runAction:day];
+    
+    ccColor4F currentColor = ccc4FFromccc3B(self.backdrop.color);
+    ccColor4F blackColor = ccc4FFromccc3B(ccBLACK);
+    
+    if (CCC4FAreEqual(currentColor, blackColor)) {
+        self.backdrop.color = ccc3(kSkyColor.r*255, kSkyColor.g*255, kSkyColor.b*255);
+    }else{
+        self.backdrop.color = ccBLACK;
+    }
+}
+
+//change position of one light
+- (void)changeLight
+{
+    
 }
 
 /**
