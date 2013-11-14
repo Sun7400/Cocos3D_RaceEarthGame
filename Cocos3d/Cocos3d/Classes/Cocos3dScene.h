@@ -89,7 +89,7 @@ typedef enum {
 - (void)printLog;
 
 - (void)changeEnvironmentLight;
-- (void)changeLight;
+- (void)changeLightPosition;
 
 - (void) switchCameraTarget;
 - (void) changeCameraPosition;

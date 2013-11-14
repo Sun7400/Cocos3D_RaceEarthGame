@@ -54,6 +54,7 @@ static const double kCameraMoveDuration = 3.0;
     
     CC3Ray _lastCameraOrientation;
 
+    CC3Light* groundLamp;
 }
 
 //Background setting
@@ -675,10 +676,10 @@ static const double kCameraMoveDuration = 3.0;
 //    cam.location = cc3v( 0.5, 1.0, 3.0 );
 //    [ground addChild: cam];
     
-    CC3Light* lamp = [CC3Light node];
-	lamp.location = cc3v( 0.0, 0.0, 50.0 ); //add lamp for the ground
-	lamp.isDirectionalOnly = NO;
-	[ground addChild: lamp];
+    groundLamp = [CC3Light node];
+	groundLamp.location = cc3v( 0.0, 0.0, 50.0 ); //add lamp for the ground
+	groundLamp.isDirectionalOnly = NO;
+	[ground addChild: groundLamp];
     
     /*
      Define Box2D Physics
@@ -1043,9 +1044,20 @@ static const double kCameraMoveDuration = 3.0;
 }
 
 //change position of one light
-- (void)changeLight
+- (void)changeLightPosition
 {
-    
+    if(groundLamp.numberOfRunningActions == 0){
+        CC3MoveTo *path0 = [CC3MoveTo actionWithDuration:0.1 moveTo:groundLamp.location];
+        CC3MoveTo *path1 = [CC3MoveTo actionWithDuration:1 moveTo:cc3v(0.0, 0.0, 5.0)];
+        CC3MoveTo *path2 = [CC3MoveTo actionWithDuration:1 moveTo:cc3v(0.0, 20.0, 5.0)];
+        CC3MoveTo *path3 = [CC3MoveTo actionWithDuration:1 moveTo:cc3v(0.0, 20.0, 50.0)];
+        CC3MoveTo *path4 = [CC3MoveTo actionWithDuration:1 moveTo:cc3v(0.0, 0.0, 50.0)];
+        CCActionInterval* path = [CCSequence actions:path0, path1, path2, path3, path4, nil];
+        
+        [groundLamp runAction: [CCRepeatForever actionWithAction:path] withTag:kCC3ActionTagMove];
+    }else{
+        [groundLamp stopActionByTag:kCC3ActionTagMove];
+    }
 }
 
 /**

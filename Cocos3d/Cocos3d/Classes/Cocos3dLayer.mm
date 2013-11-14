@@ -27,7 +27,6 @@ static double kPeakShineOpacity = 180;
 {
     //light related
     AdornableMenuItemImage* sunMI; //simulate day/night
-    // TODO: Implement it
     AdornableMenuItemImage* lightMI;
     
     //camera realted
@@ -354,7 +353,7 @@ static NSString *const kLightButtonFileName = @"lightButton_48*48.png";
 	lightMI = [AdornableMenuItemImage itemWithNormalImage: kLightButtonFileName
                                           selectedImage: kLightButtonFileName
                                                  target: self
-                                               selector: @selector(changeLight:)];
+                                               selector: @selector(changeLightPosition:)];
 	[self positionButtons];
 	
 	// Instead of having different normal and selected images, the toggle menu
@@ -375,8 +374,8 @@ static NSString *const kLightButtonFileName = @"lightButton_48*48.png";
 	[self addChild: viewMenu];
 }
 
--(void) changeLight: (CCMenuItemToggle*) svMI {
-    [(Cocos3dScene*)self.cc3Scene changeLight];
+-(void) changeLightPosition: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene changeLightPosition];
 }
 
 -(void) addCameraButton {
