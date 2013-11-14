@@ -31,15 +31,13 @@ extern "C" {
 
 #import "CCPhysicsSprite.h"
 
-
-
 #define PTM_RATIO 32
 
 enum {
 	kTagParentNode = 1,
 };
 
-
+static const double kCameraMoveDuration = 3.0;
 
 @interface Cocos3dScene ()
 {
@@ -67,7 +65,6 @@ enum {
 
 //Camera
 @property (nonatomic) CC3Node* cameraTarget;
-
 
 @end
 
@@ -1207,12 +1204,23 @@ enum {
 }
 
 
+
+- (void) changeCameraPosition
+{
+    CC3Camera* cam = self.activeCamera;
+    CC3Vector earthFront = earth.globalLocation;
+    CC3Vector cameraPosition = cc3v(earthFront.x-5, earthFront.y+10, earthFront.z+65); //hardcode to figure start position
+    
+    [cam runAction: [CC3MoveTo actionWithDuration: kCameraMoveDuration
+                                           moveTo: cameraPosition]];
+
+}
+
 /**
  * Cycle between current camera view and two views showing the complete scene.
  * When the full scene is showing, a wireframe is drawn so we can easily see its extent.
  */
 -(void) cycleZoom {
-    static const double kCameraMoveDuration = 3.0;
 
 	CC3Camera* cam = self.activeCamera;
 	[cam stopAllActions];						// Stop any current camera motion
@@ -1252,6 +1260,8 @@ enum {
 			break;
 	}
 }
+
+
 
 
 #pragma mark Scene opening and closing

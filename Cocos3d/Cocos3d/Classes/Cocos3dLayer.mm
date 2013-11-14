@@ -13,26 +13,29 @@
 
 
 /** Parameters for setting up the joystick and button controls */
-#define kJoystickLeftFileName			@"joystickLeft_32*32.png"
-#define kJoystickRightFileName			@"joystickRight_32*32.png"
-#define kJoystickSideLength				80.0
-#define kJoystickPadding				8.0
+static NSString *const kJoystickLeftFileName = @"joystickLeft_32*32.png";
+static NSString *const kJoystickRightFileName = @"joystickRight_32*32.png";
+static const double kJoystickSideLength = 80.0;
+static const double kJoystickPadding = 8.0;
 
 //Button variable
 static NSString *const kButtonShineFileName	= @"Shine48x48.png";
 static NSString *const kButtonRingFileName = @"ButtonRing48x48.png";
-#define kPeakShineOpacity				180
+static double kPeakShineOpacity = 180;
 
 @interface Cocos3dLayer()
 {
     //light related
+    // TODO: Implement it
     AdornableMenuItemImage* sunMI; //simulate day/night
+    // TODO: Implement it
     AdornableMenuItemImage* lightMI;
     
     //camera realted
+    // TODO: Implement it
     AdornableMenuItemImage* switchViewMI; //switch view betweeen object
-    AdornableMenuItemImage* zoomMI; // zoom in/out
     AdornableMenuItemImage* cameraMI; // change camera position
+    AdornableMenuItemImage* zoomMI; // zoom in/out
 
     //debug
     AdornableMenuItemImage* logMI;
@@ -206,7 +209,7 @@ static NSString *const kButtonRingFileName = @"ButtonRing48x48.png";
 	static float prevX=0, prevY=0;
 	
 	//#define kFilterFactor 0.05f
-#define kFilterFactor 1.0f	// don't use filter. the code is here just as an example
+    static const double kFilterFactor = 1.0f;	// don't use filter. the code is here just as an example
 	
 	float accelX = (float) acceleration.x * kFilterFactor + (1- kFilterFactor)*prevX;
 	float accelY = (float) acceleration.y * kFilterFactor + (1- kFilterFactor)*prevY;
@@ -385,7 +388,7 @@ static NSString *const kCameraButtonFileName = @"cameraButton_48*48.png";
 	cameraMI = [AdornableMenuItemImage itemWithNormalImage: kCameraButtonFileName
                                             selectedImage: kCameraButtonFileName
                                                    target: self
-                                                 selector: @selector(changeCamera:)];
+                                                 selector: @selector(changeCameraPosition:)];
 	[self positionButtons];
 	
 	// Instead of having different normal and selected images, the toggle menu
@@ -406,8 +409,8 @@ static NSString *const kCameraButtonFileName = @"cameraButton_48*48.png";
 	[self addChild: viewMenu];
 }
 
--(void) changeCamera: (CCMenuItemToggle*) svMI {
-    [(Cocos3dScene*)self.cc3Scene printLog];
+-(void) changeCameraPosition: (CCMenuItemToggle*) svMI {
+    [(Cocos3dScene*)self.cc3Scene changeCameraPosition];
 }
 
 -(void) addSunButton {

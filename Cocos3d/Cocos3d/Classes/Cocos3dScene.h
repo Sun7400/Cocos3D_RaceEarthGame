@@ -86,8 +86,11 @@ typedef enum {
 
 
 - (void)gyroscope : (double)roll andPitch:(double)pitch andYaw:(double)yaw;
--(void) switchCameraTarget;
--(void) cycleZoom;
 - (void)printLog;
+
+- (void) switchCameraTarget;
+- (void) changeCameraPosition;
+- (void) cycleZoom;
+
 
 @end
