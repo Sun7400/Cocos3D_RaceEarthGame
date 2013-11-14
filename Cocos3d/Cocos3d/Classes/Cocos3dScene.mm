@@ -852,10 +852,10 @@ static const double kCameraMoveDuration = 3.0;
 
    // Create a light, place it back and to the left at a specific
 	// position (not just directional lighting), and add it to the world
-//	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
-//	lamp.location = cc3v( -2.0, 0.0, 3.0 );
-//	lamp.isDirectionalOnly = NO;
-//	[earth addChild: lamp];
+	CC3Light* lamp = [CC3Light nodeWithName: @"Lamp"];
+	lamp.location = cc3v( -2.0, 0.0, 3.0 );
+	lamp.isDirectionalOnly = NO;
+	[earth addChild: lamp];
 
     
     //create earth body
