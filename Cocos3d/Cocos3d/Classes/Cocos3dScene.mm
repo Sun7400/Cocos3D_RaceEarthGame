@@ -19,6 +19,8 @@ extern "C" {
 #import "CC3Light.h"
 #import <CC3Billboard.h>
 
+#import "AudioToolbox/AudioServices.h"
+
 #import "CCScheduler.h"
 
 #import "CC3ControllableLayer.h"
@@ -1058,6 +1060,8 @@ static const double kCameraMoveDuration = 3.0;
     }else{
         [groundLamp stopActionByTag:kCC3ActionTagMove];
     }
+    
+//    [self vibrate];//test
 }
 
 /**
@@ -1482,6 +1486,14 @@ static const double kCameraMoveDuration = 3.0;
 - (void)loseLife
 {
     [(Cocos3dLayer*)self.cc3Layer updateLabel];
+    [self changeCameraPosition]; //Reset camera
+    [self vibrate];//Add vibration
+}
+
+-(void)vibrate
+{
+    NSLog(@"I'm vibrating");
+    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
 @end
