@@ -64,6 +64,7 @@ static const double kCameraMoveDuration = 3.0;
 
 //Objects
 @property (nonatomic) CC3MeshNode *earth;
+@property (nonatomic) CC3MeshNode *earthShadow;
 @property (nonatomic) CC3MeshNode *test;
 
 @property (nonatomic) CC3BoxNode *cube;
@@ -80,6 +81,7 @@ static const double kCameraMoveDuration = 3.0;
 
 //objects
 @synthesize earth;
+@synthesize earthShadow;
 @synthesize test;
 
 @synthesize cube;
@@ -146,7 +148,7 @@ static const double kCameraMoveDuration = 3.0;
      * Add objects
      */
     [self addEarth];
-
+    [self addEarthShadow];
     
 //    [self addTestPOD];
 //    [self addBall];
@@ -882,6 +884,19 @@ static const double kCameraMoveDuration = 3.0;
     _earthFixture = earthBody->CreateFixture(&earthShapeDef);
 }
 
+- (void)addEarthShadow
+{
+    //hard code to simulate the shadow of the earth
+    earthShadow = [[CC3MeshNode alloc] init];
+    [earthShadow setColor:ccc3(0.0, 0.0, 0.0)];
+    [earthShadow setLocation:CC3VectorMake(0.0, 1.0, 0.0)];
+    [earthShadow rotateBy:CC3VectorMake(90.0, 0.0, 0.0)];
+    earthShadow.shouldCullBackFaces = NO;
+    [earthShadow populateAsDiskWithRadius:1.0 andTessellation:CC3TessellationMake(30, 30)];
+    
+    [self addChild:earthShadow];
+}
+
 - (void)addTestPOD
 {
     [self addContentFromPODFile: @"Untitled.pod" withName:@"test"];
@@ -1002,6 +1017,9 @@ static const double kCameraMoveDuration = 3.0;
     
 //    [self printLog];
     [self checkGameLogic];
+    
+    //simulate shadow of earth
+    [earthShadow setLocation:CC3VectorMake(earth.globalLocation.x, -13.5, earth.globalLocation.z)];
 
 }
 
