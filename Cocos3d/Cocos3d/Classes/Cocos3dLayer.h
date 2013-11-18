@@ -20,5 +20,6 @@
 }
 
 - (void)updateLabel;
+- (void)gameWin;
 
 @end

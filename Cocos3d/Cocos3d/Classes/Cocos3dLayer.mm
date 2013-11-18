@@ -150,6 +150,16 @@ static double kPeakShineOpacity = 180;
     [self addChild:label];
 }
 
+- (void)gameWin
+{
+    [self cocos3dScene].backdrop = [CC3ClipSpaceNode nodeWithColor: ccc4f(1, 0, 0, 1)];
+    
+    CCLabelTTF *label = [[CCLabelTTF alloc] initWithString:@"Win!" fontName:@"Marker Felt" fontSize:24];
+    label.color = ccRED;
+    label.position = CGPointMake(150, 300);
+    [self addChild:label];
+}
+
 #pragma mark Joystick
 
 /** Creates the two joysticks that control the 3D camera direction and location. */

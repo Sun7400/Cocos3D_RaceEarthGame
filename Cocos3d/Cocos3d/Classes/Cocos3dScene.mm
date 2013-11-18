@@ -59,6 +59,8 @@ static const double kCameraMoveDuration = 3.0;
     CC3Light* groundLamp;
 }
 
+@property (nonatomic) double accumulativeZ;
+
 //Background setting
 @property (nonatomic) CC3MeshNode *ground;
 
@@ -75,6 +77,8 @@ static const double kCameraMoveDuration = 3.0;
 @end
 
 @implementation Cocos3dScene
+
+@synthesize accumulativeZ = _accumulativeZ;
 
 //background
 @synthesize ground;
@@ -669,7 +673,7 @@ static const double kCameraMoveDuration = 3.0;
     [ground setTexture:[CC3Texture textureFromFile: kGroundTextureFile]];
     [ground repeatTexture: (ccTex2F){10, 10}];	// Grass
 
-    ground.location = cc3v(0.0, -14.0, -50.0); //hardcode to adjust earth
+    ground.location = cc3v(0.0, -14.0, -20.0); //hardcode to adjust earth
     ground.rotation = cc3v(-90.0, 180.0, 0.0);
     ground.shouldCullBackFaces = YES;
     [ground retainVertexLocations];
@@ -1467,6 +1471,7 @@ static const double kCameraMoveDuration = 3.0;
 //    NSLog(@"z: %f", z);
     
     z += pitch/10;
+    _accumulativeZ += pitch/10;
     earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
 
 //    [self moveCameraAlongZ];
@@ -1493,6 +1498,12 @@ static const double kCameraMoveDuration = 3.0;
         //recreate earth
         [self addEarth];
         self.activeCamera.target = earth;
+    }
+    
+    //then check win condition
+    NSLog(@"z: %f", _accumulativeZ);
+    if(_accumulativeZ > 65){
+        [(Cocos3dLayer*)self.cc3Layer gameWin];
     }
 }
 
