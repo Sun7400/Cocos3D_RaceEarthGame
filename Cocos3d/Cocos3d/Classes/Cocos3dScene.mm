@@ -897,7 +897,7 @@ static const double kCameraMoveDuration = 3.0;
     
     //Eliminate offset between earth and earthbody
     offsetx = earthBody->GetPosition().x - earth.globalLocation.x;
-    offsety = earthBody->GetPosition().y - earth.globalLocation.y - 45;
+    offsety = earthBody->GetPosition().y - earth.globalLocation.y - 43;
     z = 170.0; //earth init z-position
 }
 
@@ -1486,8 +1486,8 @@ static const double kCameraMoveDuration = 3.0;
 //    NSLog(@"Roll:%f Pitch:%f Yaw:%f", roll, pitch, yaw);
 //    NSLog(@"z: %f", z);
     
-    z += pitch/10;
-    _accumulativeZ += pitch/10;
+    z += pitch/2;
+    _accumulativeZ += pitch/2;
     earthBody->ApplyForce(b2Vec2(roll*10, 0), earthBody->GetLocalCenter());
 
 //    [self moveCameraAlongZ];
@@ -1517,8 +1517,8 @@ static const double kCameraMoveDuration = 3.0;
     }
     
     //then check win condition
-//    NSLog(@"z: %f", _accumulativeZ);
-    if(_accumulativeZ > 65){
+//    NSLog(@"amcculativeZ: %f", _accumulativeZ);
+    if(z < 20){
         [(Cocos3dLayer*)self.cc3Layer gameWin];
     }
 }
