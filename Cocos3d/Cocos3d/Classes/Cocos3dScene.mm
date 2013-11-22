@@ -46,6 +46,8 @@ static const double kCameraMoveDuration = 3.0;
 @interface Cocos3dScene ()
 {
     float y;
+    float offsetx;
+    float offsety;
     float z;
     
     CGSize screenSize;
@@ -125,7 +127,7 @@ static const double kCameraMoveDuration = 3.0;
 -(void) initializeScene {
     static const double kNoFadeIn = 0.0f;
 
-    z = 0.0;
+    
     
     screenSize = [CCDirector sharedDirector].winSize;
     previousTime = nil;
@@ -204,10 +206,11 @@ static const double kCameraMoveDuration = 3.0;
     
  	// ------------------------------------------
    
+    
+    
 
 //    [self  setCam];
 //    [self.activeCamera moveToShowAllOf:ground withPadding:0.5];
-
 }
 
 - (void) setCam
@@ -662,7 +665,7 @@ static const double kCameraMoveDuration = 3.0;
     static NSString *const kGroundTextureFile = @"grass2.jpg";
 
     double width = 20;
-    double length = 100;
+    double length = 200;
     
     /*
      Define Cocos3d Object
@@ -711,7 +714,7 @@ static const double kCameraMoveDuration = 3.0;
 
     
     // bottom
-    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(5,0)); //hardcode according to the left/right edge above
+    groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(8,0)); //hardcode according to the left/right edge above
     groundBody->CreateFixture(&groundBox,0);
     
     /*
@@ -835,7 +838,7 @@ static const double kCameraMoveDuration = 3.0;
 
 - (void)addEarth
 {
-    double initX = 5.0;
+    double initX = 6.2;
     double initY = 50.0;
     double initZ = 100.0;
     
@@ -864,6 +867,11 @@ static const double kCameraMoveDuration = 3.0;
 	lamp.location = cc3v( -2.0, 0.0, 3.0 );
 	lamp.isDirectionalOnly = NO;
 	[earth addChild: lamp];
+    
+    CC3Light* lamp2 = [CC3Light nodeWithName: @"Lamp"];
+	lamp2.location = cc3v( 2.0, 0.0, -3.0 );
+	lamp2.isDirectionalOnly = NO;
+	[earth addChild: lamp2];
 
     
     //create earth body
@@ -886,6 +894,11 @@ static const double kCameraMoveDuration = 3.0;
     earthShapeDef.restitution = 0.35f;
     earthShapeDef.isSensor = FALSE;
     _earthFixture = earthBody->CreateFixture(&earthShapeDef);
+    
+    //Eliminate offset between earth and earthbody
+    offsetx = earthBody->GetPosition().x - earth.globalLocation.x;
+    offsety = earthBody->GetPosition().y - earth.globalLocation.y - 45;
+    z = 170.0; //earth init z-position
 }
 
 - (void)addEarthShadow
@@ -1035,6 +1048,7 @@ static const double kCameraMoveDuration = 3.0;
     //TODO set active camera z hardcode
 //    self.activeCamera.globalLocation.z = 0;
     
+    
     NSLog(@"Ground x:%f y:%f z:%f", ground.globalLocation.x, ground.globalLocation.y, ground.globalLocation.z);
     NSLog(@"GroundBody x:%f y:%f", groundBody->GetPosition().x, groundBody->GetPosition().y);
     
@@ -1132,10 +1146,12 @@ static const double kCameraMoveDuration = 3.0;
             // Get the distance from the camera to the projection plane
             GLfloat zCam = self.activeCamera.globalLocation.z;
             
+            
+            
             // Calc the X & Y coordinates on the Z = z plane using trig and similar triangles
             // Change location for cocos3d according to box2d
-            CC3Vector tp3D = cc3v(tanHalfFOV * xtp * aspect * zCam,
-                                  tanHalfFOV * ytp * zCam,
+            CC3Vector tp3D = cc3v(tanHalfFOV * xtp * aspect * zCam + offsetx,
+                                  tanHalfFOV * ytp * zCam + offsety,
                                   z);
             
             //Synchronize the mesh position with the corresponding body
@@ -1275,7 +1291,7 @@ static const double kCameraMoveDuration = 3.0;
 {
     CC3Camera* cam = self.activeCamera;
     CC3Vector earthFront = earth.globalLocation;
-    CC3Vector cameraPosition = cc3v(earthFront.x-5, earthFront.y+10, earthFront.z+65); //hardcode to figure start position
+    CC3Vector cameraPosition = cc3v(earthFront.x-5, earthFront.y+10, earthFront.z+25); //hardcode to figure start position
     
     [cam runAction: [CC3MoveTo actionWithDuration: kCameraMoveDuration
                                            moveTo: cameraPosition]];
@@ -1443,7 +1459,7 @@ static const double kCameraMoveDuration = 3.0;
 //	NSLog(@"Touch %u %f %f", touchType, touchPoint.x, touchPoint.y);
     
     //touch to make racecar jump in +y direction
-    earthBody->ApplyForce(b2Vec2(0, 200), earthBody->GetLocalCenter());
+    earthBody->ApplyForce(b2Vec2(0, 100), earthBody->GetLocalCenter());
     
     [self pickNodeFromTapAt:touchPoint];
     
@@ -1488,7 +1504,7 @@ static const double kCameraMoveDuration = 3.0;
 - (void)checkGameLogic
 {
     //earth fall out of the ground
-    if(earth.globalLocation.y < -20){
+    if(earth.globalLocation.y < -40){
         [self printLog];
         [self loseLife];
         
@@ -1501,7 +1517,7 @@ static const double kCameraMoveDuration = 3.0;
     }
     
     //then check win condition
-    NSLog(@"z: %f", _accumulativeZ);
+//    NSLog(@"z: %f", _accumulativeZ);
     if(_accumulativeZ > 65){
         [(Cocos3dLayer*)self.cc3Layer gameWin];
     }

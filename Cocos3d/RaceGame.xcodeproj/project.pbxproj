@@ -62,7 +62,6 @@
 		4C2E6E0C18231D3C0072F6F0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E0B18231D3C0072F6F0 /* Foundation.framework */; };
 		4C2E6E0E18231D3C0072F6F0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E0D18231D3C0072F6F0 /* CoreGraphics.framework */; };
 		4C2E6E1018231D3C0072F6F0 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E0F18231D3C0072F6F0 /* CoreText.framework */; };
-		4C2E6E1218231D3C0072F6F0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2E6E1118231D3C0072F6F0 /* GameKit.framework */; };
 		4C2E6E1818231D3C0072F6F0 /* CCAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E6E1718231D3C0072F6F0 /* CCAction.m */; };
 		4C2E6E1B18231D3C0072F6F0 /* CCActionCamera.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E6E1A18231D3C0072F6F0 /* CCActionCamera.m */; };
 		4C2E6E1E18231D3C0072F6F0 /* CCActionCatmullRom.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E6E1D18231D3C0072F6F0 /* CCActionCatmullRom.m */; };
@@ -444,7 +443,6 @@
 		4C2E6E0B18231D3C0072F6F0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4C2E6E0D18231D3C0072F6F0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		4C2E6E0F18231D3C0072F6F0 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
-		4C2E6E1118231D3C0072F6F0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		4C2E6E1618231D3C0072F6F0 /* CCAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CCAction.h; path = libs/cocos2d/CCAction.h; sourceTree = "<group>"; };
 		4C2E6E1718231D3C0072F6F0 /* CCAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = CCAction.m; path = libs/cocos2d/CCAction.m; sourceTree = "<group>"; };
 		4C2E6E1918231D3C0072F6F0 /* CCActionCamera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CCActionCamera.h; path = libs/cocos2d/CCActionCamera.h; sourceTree = "<group>"; };
@@ -1111,7 +1109,6 @@
 				4C2E6E0218231D3B0072F6F0 /* OpenGLES.framework in Frameworks */,
 				4C2E6E0C18231D3C0072F6F0 /* Foundation.framework in Frameworks */,
 				4C2E6E0618231D3B0072F6F0 /* AudioToolbox.framework in Frameworks */,
-				4C2E6E1218231D3C0072F6F0 /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1212,7 +1209,6 @@
 				4C207FE2182C55F8005B1335 /* CoreMotion.framework */,
 				4C2E6E0F18231D3C0072F6F0 /* CoreText.framework */,
 				4C2E6E0B18231D3C0072F6F0 /* Foundation.framework */,
-				4C2E6E1118231D3C0072F6F0 /* GameKit.framework */,
 				4C2E6E0318231D3B0072F6F0 /* OpenAL.framework */,
 				4C2E6E0118231D3B0072F6F0 /* OpenGLES.framework */,
 				4C2E6DFF18231D3B0072F6F0 /* QuartzCore.framework */,
@@ -2356,6 +2352,19 @@
 			attributes = {
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Yuhua Mai";
+				TargetAttributes = {
+					4C2E6DFB18231D3B0072F6F0 = {
+						DevelopmentTeam = R5K7Y3KE3N;
+						SystemCapabilities = {
+							com.apple.DataProtection = {
+								enabled = 0;
+							};
+							com.apple.GameCenter = {
+								enabled = 0;
+							};
+						};
+					};
+				};
 			};
 			buildConfigurationList = 4C2E6DF718231D3B0072F6F0 /* Build configuration list for PBXProject "RaceGame" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2838,6 +2847,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				Box2D = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "\"Cocos3d/libs\"";
 				HEADER_SEARCH_PATHS = (
 					"\"Cocos3d/libs/kazmath/include\"",
@@ -2853,6 +2864,7 @@
 					"\"Cocos3d/libs/Box2D/Common\"",
 				);
 				PRODUCT_NAME = RaceGame;
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"Cocos3d/libs\"/**";
 			};
@@ -2864,6 +2876,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				Box2D = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "\"Cocos3d/libs\"";
 				HEADER_SEARCH_PATHS = (
 					"\"Cocos3d/libs/kazmath/include\"",
@@ -2879,6 +2893,7 @@
 					"\"Cocos3d/libs/Box2D/Common\"",
 				);
 				PRODUCT_NAME = RaceGame;
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "\"Cocos3d/libs\"/**";
 			};
